@@ -1,9 +1,12 @@
 from pyglet import *
+from util import visibleEntity
 
 
 
-class Player:
+class Player(visibleEntity):
 
 	def __init__(self, pos, size):
-		self.pos = pos
-		self.size = size
+		super().__init__(pos,size)
+
+		
+
