@@ -2,8 +2,6 @@ from pyglet import *
 
 
 screen = window.Window(vsync = True)
-batch = graphics.Batch()
-objects = []
 
 
 @screen.event
