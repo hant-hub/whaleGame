@@ -1,5 +1,5 @@
 from pyglet import *
-from res import whalestuff, util
+from res import whalestuff, util, handlers
 
 
 #initialize graphics
@@ -11,11 +11,12 @@ background = shapes.Rectangle(x=0, y=0, width=screen.width, height=screen.height
 objects = []
 
 
-#init mouse
-mouse = [0,0]
+#create input handler
+handler = handlers.Handler(screen)
+handler.gamePlayHandler()
 
 #init player
-player = whalestuff.Player(pos = (screen.width/2, screen.height/2), size = (100, 50), speed = 1, mouse = mouse, batch = batch)
+player = whalestuff.Player(pos = (screen.width/2, screen.height/2), size = (100, 50), speed = 1, handler = handler, batch = batch)
 camera = util.Camera(pos = (0,0), zoom = 0, player = player, window = screen)
 objects.append(player)
 objects.append(camera)
@@ -26,13 +27,7 @@ player.camera = camera
 
 
 
-@screen.event
-def on_mouse_motion(x,y,dx,dy):
 
-	mouse[0] += dx
-	mouse[1] += dy
-
-#screen.push_handlers(on_mouse_motion)
 
 
 @screen.event

@@ -6,7 +6,7 @@ from res.util import visibleEntity
 
 class Player(visibleEntity):
 
-	def __init__(self, pos, size, speed, mouse, batch):
+	def __init__(self, pos, size, speed, handler, batch):
 		super().__init__(pos,size)
 
 
@@ -19,25 +19,21 @@ class Player(visibleEntity):
 
 		self.vel = (0,0)
 		self.speed = speed
-		self.target = (0,0)
-		self.mouse = mouse
-		self.turnspeed = 0.2
+		self.handler = handler
+		self.turnspeed = 0.05
 
 
 
 	def update(self, dt):
 
 		
-		tx,ty = self.mouse
+		tx,ty = self.handler.target
 		x, y = self.pos
 		dx, dy = self.vel
 		cx, cy = self.camera.pos
 
 		dist = math.dist([x,y], [tx, ty])
 
-		#account for camera
-		tx -= cx
-		ty -= cy
 
 		#create target velocity
 		tdx = (tx - x)
@@ -59,16 +55,13 @@ class Player(visibleEntity):
 		y += dy * dt
 
 
+		
 
-		#calculate rotation
-		rx = dx#/dist
-		ry = dy#/dist
+		#apply rotation
 
-		rotation = math.atan2(ry, rx)
+		rotation = math.degrees(math.atan2(dy, dx))
 
-
-
-		self.updatevisual(self.rec, math.degrees(-rotation))
+		self.updatevisual(self.rec, -rotation)
 
 		self.pos = (x,y)
 		self.vel = (dx,dy)
