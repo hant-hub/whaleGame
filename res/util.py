@@ -88,7 +88,7 @@ class collision:
 			vx += x
 			vy += y
 
-			newVerticies.append((vx,vy))
+			newVerticies.append((vx/8,vy/8))
 
 
 		return newVerticies
@@ -162,6 +162,7 @@ class collision:
 			if not (max(projectionA) >= min(projectionB) and max(projectionB) >= min(projectionA)):
 				return False
 
+
 		return True
 
 
@@ -170,8 +171,8 @@ class collision:
 		widthA, heightA = (recA.width, recA.height)
 		widthB, heightB = (recB.width, recB.height)
 
-		radiusA = math.hypot(widthA, heightA)/2
-		radiusB = math.hypot(widthB, heightB)/2
+		radiusA = math.hypot(widthA, heightA)
+		radiusB = math.hypot(widthB, heightB)
 
 		ax, ay = recA.position
 		bx, by = recB.position

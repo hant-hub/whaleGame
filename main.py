@@ -51,7 +51,13 @@ def update(dt):
 		obj.update(dt)
 
 
-	print(util.collision.detectCollision(recA = player.rec, recB = background))
+	if util.collision.detectCollision(recA = player.rec, recB = background):
+
+		player.rec.color = (255,0,0)
+
+	else:
+
+		player.rec.color = (255,255,255)
 
 
 
