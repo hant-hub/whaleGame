@@ -1,5 +1,5 @@
 from pyglet import *
-from res import whalestuff, util, handlers
+from res import whalestuff, util, handlers, gui
 
 
 #initialize graphics
@@ -12,7 +12,7 @@ objects = []
 
 
 #create input handler
-handler = handlers.Handler(screen)
+handler = handlers.Handler(window = screen)
 
 
 #init player
@@ -21,10 +21,13 @@ camera = util.Camera(pos = (0,0), zoom = 0, player = player, window = screen)
 objects.append(player)
 objects.append(camera)
 
+#init GUI
+Gui = gui.GUI(pos = (0,0), player = player, window = screen, batch = batch)
+objects.append(Gui)
 
 #link objects
 player.camera = camera
-handler.gamePlayHandler(player)
+handler.gamePlayHandler(player = player)
 
 
 
@@ -46,6 +49,11 @@ def update(dt):
 
 	for obj in objects:
 		obj.update(dt)
+
+
+	print(util.collision.detectCollision(recA = player.rec, recB = background))
+
+
 
 
 clock.schedule_interval(update,1/60)

@@ -23,7 +23,7 @@ class Handler:
 		def on_mouse_press(x,y, button, modifiers):
 			if button == window.mouse.LEFT:
 				self.target = (x,y)
-				self.player.Ram.ramStart(player)
+				self.player.Ram.ramStart(parent = player)
 
 
 		self.window.push_handlers(on_mouse_motion = on_mouse_motion, on_mouse_press=on_mouse_press)

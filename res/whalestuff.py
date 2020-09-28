@@ -28,6 +28,10 @@ class Player(visibleEntity):
 		self.ram = False
 		self.damage = True
 
+		#health
+		self.maxhealth = 100
+		self.health = 100
+
 
 
 	def update(self, dt):
@@ -46,10 +50,10 @@ class Player(visibleEntity):
 
 
 		if self.ram == True:
-			x, y, dx, dy = self.Ram.ram((x, y), (dx, dy), self.speed, dt)
+			x, y, dx, dy = self.Ram.ram(pos = (x, y), vel = (dx, dy), speed = self.speed, dt = dt)
 
 		else:
-			x, y, dx, dy = self.basicmovement(self.pos, self.vel, (tx,ty), dt)
+			x, y, dx, dy = self.basicmovement(pos = self.pos, vel = self.vel, target = (tx,ty), dt = dt)
 
 
 		
@@ -58,7 +62,7 @@ class Player(visibleEntity):
 
 		rotation = math.degrees(math.atan2(dy, dx))
 
-		self.updatevisual(self.rec, -rotation)
+		self.updatevisual(sprite = self.rec, rotation = -rotation)
 
 		self.pos = (x,y)
 		self.vel = (dx,dy)
@@ -92,6 +96,11 @@ class Player(visibleEntity):
 		y += dy * dt
 
 		return (x,y,dx,dy)
+
+
+	def hit(obj):
+
+		pass
 
 
 
@@ -139,3 +148,8 @@ class Player(visibleEntity):
 			y += dy * speed * dt * 3
 
 			return (x,y, dx, dy)
+
+
+
+
+
