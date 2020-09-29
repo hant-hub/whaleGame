@@ -57,7 +57,7 @@ class collision:
 	def calculateVerticies(sprite):
 
 		#grab relavent data
-		rotation = sprite.rotation
+		rotation = math.radians(sprite.rotation)
 		x, y = sprite.position
 		anchorx, anchory = (sprite.anchor_x, sprite.anchor_y)
 		width, height = (sprite.width, sprite.height)
@@ -65,13 +65,13 @@ class collision:
 
 		#get vertex coordinates in terms of the anchorpoint
 
-		v1 = ( (width-anchorx),  (height-anchory) )
+		v1 = ((width-anchorx),  (height-anchory))
 
-		v2 = ( (width - anchorx), (0-anchory))
+		v2 = ((width - anchorx), (0-anchory))
 
 		v3 = (-anchorx, -anchory)
 
-		v4 = (0, (height-anchory))
+		v4 = (-anchorx, (height-anchory))
 
 
 		verticies = [v1, v2, v3, v4]
@@ -83,12 +83,12 @@ class collision:
 
 
 			vx = vx*math.cos(rotation) - vy*math.sin(rotation)
-			vy = vx*math.sin(rotation) + vy*math.cos(rotation)
+			vy = vy*math.cos(rotation) + vx*math.sin(rotation)
 
 			vx += x
 			vy += y
 
-			newVerticies.append((vx/8,vy/8))
+			newVerticies.append((vx,vy))
 
 
 		return newVerticies
@@ -162,7 +162,7 @@ class collision:
 			if not (max(projectionA) >= min(projectionB) and max(projectionB) >= min(projectionA)):
 				return False
 
-
+		
 		return True
 
 

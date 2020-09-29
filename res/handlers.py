@@ -17,7 +17,7 @@ class Handler:
 		self.player=player
 
 
-		def on_mouse_motion(x,y,dx,dy):
+		def on_mouse_motion(x,y,dx,dy, buttons = None, modifiers = None):
 			self.target = (x,y)
 
 		def on_mouse_press(x,y, button, modifiers):
@@ -25,8 +25,20 @@ class Handler:
 				self.target = (x,y)
 				self.player.Ram.ramStart(parent = player)
 
+			if button == window.mouse.RIGHT:
+				self.player.damage = False
+				self.player.rec.opacity = 128
 
-		self.window.push_handlers(on_mouse_motion = on_mouse_motion, on_mouse_press=on_mouse_press)
+
+
+		def on_mouse_release(x,y, button, modifiers):
+
+			if button == window.mouse.RIGHT:
+				self.player.damage = True
+				self.player.rec.opacity = 255
+
+
+		self.window.push_handlers(on_mouse_drag = on_mouse_motion, on_mouse_motion = on_mouse_motion, on_mouse_press=on_mouse_press, on_mouse_release = on_mouse_release)
 
 
 
