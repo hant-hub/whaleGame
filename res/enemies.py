@@ -99,7 +99,7 @@ class Enemy(visibleEntity):
 		if type(obj) == Enemy:
 			dx, dy = self.vel
 
-			ax, ay = getClosestPointCircle(center = obj.pos, radius = 100, point = self.pos)
+			ax, ay = getClosestPointCircle(center = obj.pos, radius = 300, point = self.pos)
 
 			dx += (ax + randint(-100, 100)) * self.turnspeed * 1/100
 			dy += (ay + randint(-100, 100)) * self.turnspeed * 1/100

@@ -13,8 +13,12 @@ class GUI:
 		#create healthbar
 		self.healthbar = Healthbar(pos = (30, window.height - 60), size = (400, 40), player = player, batch = batch)
 
+		#create airmeter
+		self.airmeter = AirMeter(pos = (window.width-500, window.height - 60), size = (400,40), player = player, batch = batch)
+
 	def update(self, dt):
 		self.healthbar.update(dt)
+		self.airmeter.update(dt)
 
 
 
@@ -53,6 +57,32 @@ class Healthbar:
 		self.size = (width, height)
 
 
+
+class AirMeter:
+
+	def __init__(self, pos, size, player, batch):
+		self.pos = pos
+		self.player = player
+
+		self.size = size
+		self.maxsize = size
+		self.rec = shapes.Rectangle(*pos, *size, color=(0, 0, 255), batch=batch)
+
+		self.air = 100
+		self.maxair = 100
+
+
+	def update(self, dt):
+
+		airpart = self.air/self.maxair
+
+		maxwidth, maxheight = self.maxsize
+
+
+
+		width = maxwidth * airpart
+
+		self.rec.width = width
 
 
 
