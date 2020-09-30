@@ -11,7 +11,7 @@ class GUI:
 		self.player = player
 
 		#create healthbar
-		self.healthbar = Healthbar(pos = (30, window.height - 60), size = (150, 40), player = player, batch = batch)
+		self.healthbar = Healthbar(pos = (30, window.height - 60), size = (400, 40), player = player, batch = batch)
 
 	def update(self, dt):
 		self.healthbar.update(dt)

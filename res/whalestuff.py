@@ -1,21 +1,23 @@
 from pyglet import *
 import math
 from res.util import visibleEntity
+from res.enemies import Enemy
+from res.Projectiles import Harpoon
 
 
 
 class Player(visibleEntity):
 
 	def __init__(self, pos, size, speed, handler, batch):
-		super().__init__(pos,size)
+		super().__init__(pos,size, shapes.Rectangle(*pos, *size, color=(255, 255, 255), batch=batch))
 
 
 
 		#setup sprite
-		self.rec = shapes.Rectangle(*pos, *size, color=(255, 255, 255), batch=batch)
 
-		self.rec.anchor_x = (self.rec.width/3) * 2
-		self.rec.anchor_y = (self.rec.height/2)
+
+		self.sprite.anchor_x = (self.sprite.width/3) * 2
+		self.sprite.anchor_y = (self.sprite.height/2)
 
 
 		#setup movment
@@ -32,9 +34,16 @@ class Player(visibleEntity):
 		self.maxhealth = 100
 		self.health = 100
 
+		#death flag
+		self.alive = True
+
 
 
 	def update(self, dt):
+
+
+		if self.health <= 0:
+			self.OhFuckOhShitImGonnaDieIWasSoYoungAHHHHHHHHHHH()
 
 		
 		tx,ty = self.handler.target
@@ -62,7 +71,7 @@ class Player(visibleEntity):
 
 		rotation = math.degrees(math.atan2(dy, dx))
 
-		self.updatevisual(sprite = self.rec, rotation = -rotation)
+		self.updatevisual(sprite = self.sprite, rotation = -rotation)
 
 		self.pos = (x,y)
 		self.vel = (dx,dy)
@@ -98,9 +107,30 @@ class Player(visibleEntity):
 		return (x,y,dx,dy)
 
 
-	def hit(obj):
+	def hit(self, obj):
 
-		pass
+		if ((type(obj) == Enemy)):
+			pass
+
+		elif (type(obj) == Harpoon) and self.damage:
+			self.health -= obj.damage
+			self.damage = False
+			clock.schedule_once(self.FlipBool, 2, "self.damage")
+
+
+	def FlipBool(self, dt, value):
+		if value == "self.ram":
+			self.ram = not self.ram
+
+		elif value == "self.damage":
+			self.damage = not self.damage
+
+
+
+	def OhFuckOhShitImGonnaDieIWasSoYoungAHHHHHHHHHHH(self):
+		self.alive = False
+		
+
 
 
 

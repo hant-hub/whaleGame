@@ -4,6 +4,20 @@ import math
 
 
 
+def getClosestPointCircle(center, radius, point):
+
+	ax, ay = center
+	bx, by = point
+	
+
+	cx = ax + (radius * ( (bx - ax)/math.dist((ax,ay), (bx,by))  ))
+	cy = ay + (radius * ( (by - ay)/math.dist((ax,ay), (bx,by))  ))
+
+	return (cx,cy)
+
+
+
+
 class Camera:
 
 	def __init__(self, pos, zoom, player, window):
@@ -30,10 +44,13 @@ class Camera:
 
 class visibleEntity:
 
-	def __init__(self, pos, size):
+	def __init__(self, pos, size, sprite):
 		self.pos = pos
 		self.size = size
 		self.camera = None
+		self.sprite = sprite
+
+
 
 
 	def updatevisual(self,sprite, rotation = None):
@@ -46,6 +63,10 @@ class visibleEntity:
 
 		if rotation != None:
 			sprite.rotation = rotation
+
+	def delete(self):
+		self.sprite.delete()
+		del self.sprite
 
 
 
