@@ -151,10 +151,20 @@ class Player(visibleEntity):
 			tx -= cx
 			ty -= cy
 
+			tx -= x
+			ty -= y
 			#initilize velocity
-			#dist = math.dist([x,y],[tx,ty])
+			
+			mag = math.hypot(tx,ty)
+			if mag > 700:
+				tx /= mag
+				ty /= mag
 
-			parent.vel = ( (tx - x), (ty - y) )
+				tx *= 700
+				ty *= 700
+
+
+			parent.vel = ( tx, ty )
 
 			#set end
 			clock.schedule_once(Player.Ram.ramEnd, 0.3, parent)

@@ -40,12 +40,20 @@ class Enemy(visibleEntity):
 
 	def update(self, dt):
 
+
+		#anti-overlap
+		self.avoid_other()
+
+
+
+		#pathfinding
 		x, y = self.pos
 		dx, dy = self.vel
 		target = self.player.pos
 
 		x,y, dx,dy = Enemy.AgresiveMovement(pos = (x,y), vel = (dx,dy), speed = self.speed, turnspeed = self.turnspeed, target = target, dt = dt)
 		
+
 
 
 		self.updatevisual(sprite = self.sprite)
@@ -55,11 +63,11 @@ class Enemy(visibleEntity):
 
 
 
-	def AgresiveMovement(pos, vel, speed, turnspeed, target, dt):
+	def AgresiveMovement(pos, vel, speed, turnspeed, target, dt, radius = 300,):
 
 
 
-		tx, ty = getClosestPointCircle(center = target, radius = 300, point = pos)
+		tx, ty = getClosestPointCircle(center = target, radius = radius, point = pos)
 
 		x, y = pos
 		dx, dy = vel
@@ -88,25 +96,39 @@ class Enemy(visibleEntity):
 
 
 	def fire(self, dt, objects):
-		#if math.dist(self.pos, self.player.pos) < 300:
-		ShootHarpoon(me = self, other = self.player, output = self.objects)
+		if math.dist(self.pos, self.player.pos) < 400:
+			ShootHarpoon(me = self, other = self.player, output = self.objects)
 
 
+	def avoid_other(self):
+		forcex = 0
+		forcey = 0
+		sx, sy = self.pos
+		
 
+		for obj in [obj for obj in self.objects if type(obj) == Enemy]:
+
+			if math.dist(self.pos, obj.pos) < 100:
+				
+				bx, by = obj.pos
+
+
+				forcex += sx - bx
+				forcey += sy - by
+		
+		dx, dy = self.vel
+
+
+		dx += forcex * 0.1
+		dy += forcey * 0.1
+
+		self.vel = (dx,dy)
 
 
 	def hit(self, obj):
+
 		if type(obj) == Enemy:
-			dx, dy = self.vel
-
-			ax, ay = getClosestPointCircle(center = obj.pos, radius = 300, point = self.pos)
-
-			dx += (ax + randint(-100, 100)) * self.turnspeed * 1/100
-			dy += (ay + randint(-100, 100)) * self.turnspeed * 1/100
-
-			self.vel = (dx,dy)
-
-
+			pass
 
 		elif type(obj) not in [Enemy, Harpoon]:
 			clock.unschedule(self.fire)
