@@ -1,3 +1,5 @@
+"""logic and behavior for GUI elements"""
+
 from pyglet import *
 
 
@@ -5,6 +7,7 @@ from pyglet import *
 
 
 class GUI:
+	"""main interface for GUI"""
 
 	def __init__(self, pos, player, window, batch):
 		self.pos = pos
@@ -24,7 +27,7 @@ class GUI:
 
 
 class Healthbar:
-
+	"""convienience function for displaying health data. Might refactor later"""
 	def __init__(self, pos, size, player, batch):
 		self.pos = pos
 		self.player = player
@@ -59,6 +62,7 @@ class Healthbar:
 
 
 class AirMeter:
+	"""convienience class for displaying air (remaining dive time). Might refactor into just a function later"""
 
 	def __init__(self, pos, size, player, batch):
 		self.pos = pos

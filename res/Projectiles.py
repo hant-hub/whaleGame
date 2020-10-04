@@ -1,3 +1,11 @@
+"""Holds all projectile types and behavior.
+
+This includes both enemy and player projectiles as well as interfaces for
+instantiating projectiles with functions
+"""
+
+
+
 from pyglet import *
 import math
 from res.util import visibleEntity
@@ -5,6 +13,7 @@ from res.util import visibleEntity
 
 
 class Harpoon(visibleEntity):
+	"""Basic projectile for Enemies"""
 
 	def __init__(self, pos, size, speed, vel, side, camera, batch):
 		super().__init__(pos,size, shapes.Rectangle(*pos, *size, color=(255, 255, 255), batch=batch))
@@ -41,6 +50,7 @@ class Harpoon(visibleEntity):
 
 
 	def update(self, dt):
+		"""Update method Projctile, fundamentallythe same for all Projectiles"""
 
 		x, y = self.pos
 		dx, dy = self.vel
@@ -57,23 +67,26 @@ class Harpoon(visibleEntity):
 
 
 	def hit(self,obj):
+		"""handles behavior when colliding with other objects. Currently does nothing"""
 		pass
 
 
 	def kill(self, dt):
+		"""Deletes projectile after it reaches the end of its 'life' """
 		self.alive = False
 
 
 
 
 def ShootHarpoon(me, other, output):
-		tx, ty = other.pos
-		x, y = me.pos
+	"""method for launching harpoon projectile"""
+	tx, ty = other.pos
+	x, y = me.pos
 
-		tx -= x
-		ty -= y
+	tx -= x
+	ty -= y
 
-		tx /= math.dist(other.pos, me.pos)
-		ty /= math.dist(other.pos, me.pos)
+	tx /= math.dist(other.pos, me.pos)
+	ty /= math.dist(other.pos, me.pos)
 
-		output.append(Harpoon(pos = me.pos, size = (30,10), speed = 15, vel = (tx,ty), side = type(me), camera = me.camera, batch = me.batch))
+	output.append(Harpoon(pos = me.pos, size = (30,10), speed = 15, vel = (tx,ty), side = type(me), camera = me.camera, batch = me.batch))

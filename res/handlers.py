@@ -1,9 +1,13 @@
+"""contains input handlers"""
+
+
 from pyglet import *
 import math
 
 
 
 class Handler:
+	"""general class for managing input"""
 
 	def __init__(self, window):
 		self.window = window	
@@ -14,6 +18,11 @@ class Handler:
 
 
 	def gamePlayHandler(self, player):
+		"""Handler for direct gameplay.
+
+
+		Defines and pushes the handlers for gameplay onto the hander stack
+		"""
 		self.player=player
 
 
@@ -21,7 +30,7 @@ class Handler:
 			self.target = (x,y)
 
 		def on_mouse_press(x,y, button, modifiers):
-			if button == window.mouse.LEFT:
+			if button == window.mouse.LEFT and self.player.ramcool:
 				self.target = (x,y)
 				self.player.Ram.ramStart(parent = player)
 
@@ -47,5 +56,11 @@ class Handler:
 
 
 
-	def endGamePlay(self):
+	def EndHandling(self):
+		"""Pops handlers off stack.
+
+
+		Should be used when changing handlers.
+		ie: when going from gameplay to a menu
+		"""
 		self.window.pop_handlers()

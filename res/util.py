@@ -1,3 +1,6 @@
+"""misc math functions and classes that are reused often"""
+
+
 from pyglet import *
 import math
 
@@ -5,6 +8,13 @@ import math
 
 
 def getClosestPointCircle(center, radius, point):
+	"""computes the closest point on a circle to the given point
+
+
+	If we have a circle with center = center and radius = radius.
+	we return the point on the circumference of our circle with the 
+	closest Euclidean distance to our eccentric point
+	"""
 
 	ax, ay = center
 	bx, by = point
@@ -19,6 +29,7 @@ def getClosestPointCircle(center, radius, point):
 
 
 class Camera:
+	"""holds all camera logic"""
 
 	def __init__(self, pos, zoom, player, window):
 		self.pos = pos
@@ -43,6 +54,11 @@ class Camera:
 
 
 class visibleEntity:
+	"""class for all objects that need to be rendered in the game world.
+
+	This is only for objects that are affected by the camera. This does not include GUI and menu elements that
+	should be directly rendered onto the screen
+	"""
 
 	def __init__(self, pos, size, sprite):
 		self.pos = pos
@@ -54,6 +70,7 @@ class visibleEntity:
 
 
 	def updatevisual(self,sprite, rotation = None):
+		"""updates the sprite to match the camera position"""
 
 		x, y = self.pos
 		cx, cy = self.camera.pos
@@ -65,6 +82,7 @@ class visibleEntity:
 			sprite.rotation = rotation
 
 	def delete(self):
+		"""deconstructor for the sprite to make sure it is no longer rendered after the death of its parent"""
 		self.sprite.delete()
 		del self.sprite
 
@@ -74,8 +92,17 @@ class visibleEntity:
 
 
 class collision:
+	"""static class for collision functions"""
 
 	def calculateVerticies(sprite):
+		"""converts sprite/rec object into world space vertecies
+
+
+		Takes in a rectangular object and pulls the position in space as well as the relavent
+		dimensions and rotation. Then using that data it computes the world space (x,y) coordinates
+		of each vertex. This function then returns a list of the vertecies sorted clockwise around the
+		rectangle's center
+		"""
 
 		#grab relavent data
 		rotation = math.radians(sprite.rotation)
@@ -117,6 +144,11 @@ class collision:
 
 
 	def calculateAxis(verticies):
+		"""Calculates two vectors to be used as projection axes
+
+		Takes two surface normals of a set of verticies that are
+		perpendicular. (this only works for rectangles) These are then returned in a tuple
+		"""
 		ur = verticies[0]
 		lr = verticies[1]
 		ll = verticies[2]
@@ -131,6 +163,13 @@ class collision:
 
 
 	def ScalerProjection(axis, point):
+		"""projects a point onto an axis and returns a scalar based on where it landed on the axis
+
+
+		First the point is projected onto the axis using simple matrix multiplication. Then the
+		dot product of our new projected point is taken with the axis we projected onto. Finally we
+		return the scalar result of our dot product
+		"""
 
 		ax, ay = axis
 		px, py = point
@@ -148,6 +187,13 @@ class collision:
 
 
 	def ComputeCollision(recA, recB):
+		"""compute fine grain collision with two rectangles
+
+
+		This is an implementation of the seperating axis approach to
+		2d collision detection. This function is only for fine grain collision detection
+		as it is rather expensive in computing resources.
+		"""
 		
 		
 		axes = []
@@ -188,6 +234,14 @@ class collision:
 
 
 	def detectCollision(recA, recB):
+		"""General function for collision detection between two rectangles
+
+
+		This includes the coarse grain collision detection and will use the fine grain
+		collision detection when nessecary.
+
+		This is the only collision function that should be used outside of this class.
+		"""
 
 		widthA, heightA = (recA.width, recA.height)
 		widthB, heightB = (recB.width, recB.height)

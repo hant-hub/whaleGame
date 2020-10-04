@@ -1,3 +1,8 @@
+"""contains all methods and behavior for the player (whale)"""
+
+
+
+
 from pyglet import *
 import math
 from res.util import visibleEntity
@@ -7,7 +12,12 @@ from res.Projectiles import Harpoon
 
 
 class Player(visibleEntity):
+	"""singleton class for Player.
 
+	The reason its a singleton is because while we only have one player at a time
+	it makes packaging of all the methods and data for the player far more convinient to set up.
+	And should multiplayer ever become feature we have the option of instantiating more instances of player
+	"""
 	def __init__(self, pos, size, speed, handler, batch):
 		super().__init__(pos,size, shapes.Rectangle(*pos, *size, color=(255, 255, 0), batch=batch))
 
@@ -31,6 +41,7 @@ class Player(visibleEntity):
 		self.air = 100
 
 		#setup basic attack
+		self.ramcool = True
 		self.ram = False
 		self.damage = True
 
@@ -44,7 +55,7 @@ class Player(visibleEntity):
 
 
 	def update(self, dt):
-
+		"""Updates pos and vel of player"""
 
 		if self.health <= 0:
 			self.OhFuckOhShitImGonnaDieIWasSoYoungAHHHHHHHHHHH()
@@ -101,7 +112,11 @@ class Player(visibleEntity):
 
 
 	def basicmovement(self, pos, vel, target, dt):
+		"""basic movement for player.
 
+		The reason this is abstracted out is so we can switch out the basic movement with
+		conditional movement such as dashes or any other conditional movment options.
+		"""
 
 		tx, ty = target
 		x, y = pos
@@ -130,6 +145,11 @@ class Player(visibleEntity):
 
 
 	def hit(self, obj):
+		"""handles collision behvior.
+
+		In this context, Collision behavior simply means things like taking damage
+		when being hit with an enemy projectile, not taking damage from running into enemies, etc.
+		"""
 
 		if ((type(obj) == Enemy)):
 			pass
@@ -141,6 +161,7 @@ class Player(visibleEntity):
 
 
 	def FlipBool(self, dt, value):
+		"""supposed to be general purpose boolean toggle function. Might remove in future"""
 		if value == "self.ram":
 			self.ram = not self.ram
 
@@ -150,6 +171,7 @@ class Player(visibleEntity):
 
 
 	def OhFuckOhShitImGonnaDieIWasSoYoungAHHHHHHHHHHH(self):
+		"""Toggles flag to signal to the main program to delete this object"""
 		self.alive = False
 		
 
@@ -157,11 +179,17 @@ class Player(visibleEntity):
 
 
 	class Ram:
+		"""holds all logic for the Ram attack
+
+		This is a medium range dash and the main method of attacking
+		"""
 
 		def ramStart(parent):
+			""" setup to begin 'ramming' """
 
 			#set flags
 			parent.ram = True
+			parent.ramcool = False
 			parent.damage = False
 
 			#grab relevant information
@@ -190,15 +218,21 @@ class Player(visibleEntity):
 
 			#set end
 			clock.schedule_once(Player.Ram.ramEnd, 0.3, parent)
+			clock.schedule_once(Player.Ram.ramcool, 0.5, parent)
 
 		def ramEnd(dt, parent):
+			"""tears down/resets all flags and value changes for 'ram' """
 			#reset data
 			parent.ram = False
 			parent.damage = True
 			
 
+		def ramcool(dt, parent):
+			"""scheduling for cooldown period to stop spamming of ram"""
+			parent.ramcool = True
 
 		def ram(pos, vel, speed, dt):
+			"""conditional movement logic for ramming"""
 			#unpack data
 			x, y = pos
 			dx, dy = vel
