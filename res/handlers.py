@@ -27,13 +27,17 @@ class Handler:
 
 			if button == window.mouse.RIGHT:
 				self.player.damage = False
+				self.player.dive = True
 				self.player.sprite.opacity = 128
+
+				clock.unschedule(player.FlipBool)
 
 
 
 		def on_mouse_release(x,y, button, modifiers):
 
 			if button == window.mouse.RIGHT:
+				self.player.dive = False
 				self.player.damage = True
 				self.player.sprite.opacity = 255
 

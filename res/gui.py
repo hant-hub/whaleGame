@@ -68,13 +68,12 @@ class AirMeter:
 		self.maxsize = size
 		self.rec = shapes.Rectangle(*pos, *size, color=(0, 0, 255), batch=batch)
 
-		self.air = 100
-		self.maxair = 100
+
 
 
 	def update(self, dt):
 
-		airpart = self.air/self.maxair
+		airpart = self.player.air/100
 
 		maxwidth, maxheight = self.maxsize
 

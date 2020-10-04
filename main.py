@@ -74,5 +74,5 @@ def update(dt):
 
 
 
-clock.schedule_interval(update,1/60)
+clock.schedule_interval(update,1/120)
 app.run()

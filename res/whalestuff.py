@@ -9,7 +9,7 @@ from res.Projectiles import Harpoon
 class Player(visibleEntity):
 
 	def __init__(self, pos, size, speed, handler, batch):
-		super().__init__(pos,size, shapes.Rectangle(*pos, *size, color=(255, 255, 255), batch=batch))
+		super().__init__(pos,size, shapes.Rectangle(*pos, *size, color=(255, 255, 0), batch=batch))
 
 
 
@@ -25,6 +25,10 @@ class Player(visibleEntity):
 		self.speed = speed
 		self.handler = handler
 		self.turnspeed = 0.1
+
+		#diving flag
+		self.dive = False
+		self.air = 100
 
 		#setup basic attack
 		self.ram = False
@@ -44,6 +48,24 @@ class Player(visibleEntity):
 
 		if self.health <= 0:
 			self.OhFuckOhShitImGonnaDieIWasSoYoungAHHHHHHHHHHH()
+
+
+		#dive logic
+
+		if self.dive:
+			self.air -= 0.5
+
+		elif self.air < 100:
+			self.air += 0.2
+
+
+
+		if self.air <= 0:
+			self.dive = False
+			self.damage = True
+			self.sprite.opacity = 255
+
+
 
 		
 		tx,ty = self.handler.target

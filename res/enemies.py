@@ -9,7 +9,7 @@ from res.Projectiles import ShootHarpoon, Harpoon
 class Enemy(visibleEntity):
 
 	def __init__(self, pos, size, speed, player, objects, handler, camera, batch):
-		super().__init__(pos,size, shapes.Rectangle(*pos, *size, color=(255, 255, 255), batch=batch))
+		super().__init__(pos,size, shapes.Rectangle(*pos, *size, color=(0, 255, 255), batch=batch))
 		self.sprite.anchor_x = (self.sprite.width/2)
 		self.sprite.anchor_y = (self.sprite.height/2)
 
@@ -31,10 +31,13 @@ class Enemy(visibleEntity):
 		self.objects = objects
 
 
-		clock.schedule_interval(self.fire, (1.5 + random()), self.objects)
+		clock.schedule_once(self.setupFire, (random() * 2))
 
 		#death flag
 		self.alive = True
+
+	def setupFire(self, dt):
+		clock.schedule_interval(self.fire, 4, self.objects)
 
 
 
@@ -43,7 +46,7 @@ class Enemy(visibleEntity):
 
 		#anti-overlap
 		self.avoid_other()
-
+		self.speed_limit()
 
 
 		#pathfinding
@@ -52,9 +55,8 @@ class Enemy(visibleEntity):
 		target = self.player.pos
 
 		x,y, dx,dy = Enemy.AgresiveMovement(pos = (x,y), vel = (dx,dy), speed = self.speed, turnspeed = self.turnspeed, target = target, dt = dt)
+
 		
-
-
 
 		self.updatevisual(sprite = self.sprite)
 
@@ -63,7 +65,22 @@ class Enemy(visibleEntity):
 
 
 
-	def AgresiveMovement(pos, vel, speed, turnspeed, target, dt, radius = 300,):
+	def speed_limit(self):
+		dx, dy = self.vel
+		speed = math.hypot(*self.vel)
+
+		if speed > 400:
+			dx /= speed
+			dy /= speed
+
+			dx *= 400
+			dy *= 400
+
+		self.vel = (dx,dy)
+
+
+
+	def AgresiveMovement(pos, vel, speed, turnspeed, target, dt, radius = 300):
 
 
 
@@ -92,6 +109,7 @@ class Enemy(visibleEntity):
 
 
 		return (x,y, dx,dy)
+
 
 
 
@@ -130,7 +148,7 @@ class Enemy(visibleEntity):
 		if type(obj) == Enemy:
 			pass
 
-		elif type(obj) not in [Enemy, Harpoon]:
+		elif ( type(obj) not in [Enemy, Harpoon] ) and ( not obj.dive):
 			clock.unschedule(self.fire)
 			self.alive = False
 

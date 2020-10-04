@@ -76,4 +76,4 @@ def ShootHarpoon(me, other, output):
 		tx /= math.dist(other.pos, me.pos)
 		ty /= math.dist(other.pos, me.pos)
 
-		output.append(Harpoon(pos = me.pos, size = (30,10), speed = 5, vel = (tx,ty), side = type(me), camera = me.camera, batch = me.batch))
+		output.append(Harpoon(pos = me.pos, size = (30,10), speed = 15, vel = (tx,ty), side = type(me), camera = me.camera, batch = me.batch))
