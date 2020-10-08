@@ -2,9 +2,25 @@
 
 
 from pyglet import *
-import math
+import math, time
 
 
+
+def timeit(function):
+
+
+	def wrapper(*args, **kwargs):
+		start = time.perf_counter()
+
+		stuff = function(*args, **kwargs)
+
+		end = time.perf_counter()
+		print(end-start)
+
+		return stuff
+
+
+	return wrapper
 
 
 def getClosestPointCircle(center, radius, point):
@@ -93,6 +109,7 @@ class visibleEntity:
 
 class collision:
 	"""static class for collision functions"""
+
 
 	def calculateVerticies(sprite):
 		"""converts sprite/rec object into world space vertecies
@@ -196,32 +213,32 @@ class collision:
 		"""
 		
 		
-		axes = []
+		axes = set()
 
 		#rec A
 		verticiesA = collision.calculateVerticies(recA)
 		axis1, axis2 = collision.calculateAxis(verticiesA)
-		axes.append(axis1)
-		axes.append(axis2)
+		axes.add(axis1)
+		axes.add(axis2)
 
 		#rec B
 		verticiesB = collision.calculateVerticies(recB)
 		axis1b, axis2b = collision.calculateAxis(verticiesB)
-		axes.append(axis1b)
-		axes.append(axis2b)
+		axes.add(axis1b)
+		axes.add(axis2b)
 
 
 		for axis in axes:
-			projectionA = []
-			projectionB = []
+			projectionA = set()
+			projectionB = set()
 
 			for point in verticiesA:
 				projection = collision.ScalerProjection(axis, point)
-				projectionA.append(projection)
+				projectionA.add(projection)
 
 			for point in verticiesB:
 				projection = collision.ScalerProjection(axis, point)
-				projectionB.append(projection)
+				projectionB.add(projection)
 
 	
 
@@ -269,4 +286,36 @@ class collision:
 
 
 
+
+
+
+class spatialHash:
+
+	def __init__(self, cell_size):
+		self.cell_size = cell_size
+		self.contents = {}
+
+
+	def hash(self, point):
+		x, y = point
+
+		return int(x/self.cell_size), int(y/self.cell_size)
+
+	def insert_object_for_point(self, point, object):
+		self.contents.setdefault( self._hash(point), [] ).append( object )
+
+	def insert_object_for_box(self, box, obj):
+		# hash the minimum and maximum points
+		a = tuple(map(max, izip(*box))) 
+		b = tuple(map(min, izip(*box))) 
+		# iterate over the rectangular region
+		for i in range(a[0], b[0]+1):
+			for j in range(a[1], b[1]+1):
+				# append to each intersecting cell
+				self.contents.setdefault( (i, j), [] ).append( obj )
+
+
+	def insert_rect(obj):
+		verticies = collision.calculateVerticies(obj.sprite)
+		self.insert_object_for_box(verticies, obj)
 
