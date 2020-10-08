@@ -172,6 +172,7 @@ class Player(visibleEntity):
 
 	def OhFuckOhShitImGonnaDieIWasSoYoungAHHHHHHHHHHH(self):
 		"""Toggles flag to signal to the main program to delete this object"""
+		self.handler.EndHandling()
 		self.alive = False
 		
 

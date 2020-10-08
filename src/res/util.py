@@ -286,36 +286,3 @@ class collision:
 
 
 
-
-
-
-class spatialHash:
-
-	def __init__(self, cell_size):
-		self.cell_size = cell_size
-		self.contents = {}
-
-
-	def hash(self, point):
-		x, y = point
-
-		return int(x/self.cell_size), int(y/self.cell_size)
-
-	def insert_object_for_point(self, point, object):
-		self.contents.setdefault( self._hash(point), [] ).append( object )
-
-	def insert_object_for_box(self, box, obj):
-		# hash the minimum and maximum points
-		a = tuple(map(max, izip(*box))) 
-		b = tuple(map(min, izip(*box))) 
-		# iterate over the rectangular region
-		for i in range(a[0], b[0]+1):
-			for j in range(a[1], b[1]+1):
-				# append to each intersecting cell
-				self.contents.setdefault( (i, j), [] ).append( obj )
-
-
-	def insert_rect(obj):
-		verticies = collision.calculateVerticies(obj.sprite)
-		self.insert_object_for_box(verticies, obj)
-

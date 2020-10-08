@@ -120,12 +120,12 @@ class FishingBoat(Enemy):
 		dx, dy = self.vel
 		speed = math.hypot(*self.vel)
 
-		if speed > 400:
+		if speed > 200:
 			dx /= speed
 			dy /= speed
 
-			dx *= 400
-			dy *= 400
+			dx *= 200
+			dy *= 200
 
 		self.vel = (dx,dy)
 

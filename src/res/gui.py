@@ -13,85 +13,51 @@ class GUI:
 		self.pos = pos
 		self.player = player
 
+
 		#create healthbar
-		self.healthbar = Healthbar(pos = (30, window.height - 60), size = (400, 40), player = player, batch = batch)
+		self.healthbar = shapes.Rectangle(*(30, window.height - 60), *(400, 40), color=(255, 0, 0), batch=batch)
 
 		#create airmeter
-		self.airmeter = AirMeter(pos = (window.width-500, window.height - 60), size = (400,40), player = player, batch = batch)
+		self.airmeter = shapes.Rectangle(*(window.width-500, window.height - 60), *(400,40), color=(0, 0, 255), batch=batch)
 
 	def update(self, dt):
-		self.healthbar.update(dt)
-		self.airmeter.update(dt)
+		self.HealthBar()
+		self.AirMeter()
 
 
+	def HealthBar(self):
 
-
-class Healthbar:
-	"""convienience function for displaying health data. Might refactor later"""
-	def __init__(self, pos, size, player, batch):
-		self.pos = pos
-		self.player = player
-
-		self.size = size
-		self.maxsize = size
-		self.rec = shapes.Rectangle(*pos, *size, color=(255, 0, 0), batch=batch)
-	
-	def update(self, dt):
 
 		#Grab values
 		maxhealth = self.player.maxhealth
 		currenthealth = self.player.health
 
 		#grab size data
-		width, height = self.size
-		maxwidth, maxheight = self.maxsize
+		width, height = (400,40)
 
 		#calculate %
 		healthpart = currenthealth/maxhealth
 
 
 		#apply % to size
-		width = maxwidth*healthpart
+		if healthpart < 0:
+			healthpart = 0
+		width = width*healthpart
 
 		#change visual
-		self.rec.width = width
-
-		#repack values
-		self.size = (width, height)
+		self.healthbar.width = width
 
 
-
-class AirMeter:
-	"""convienience class for displaying air (remaining dive time). Might refactor into just a function later"""
-
-	def __init__(self, pos, size, player, batch):
-		self.pos = pos
-		self.player = player
-
-		self.size = size
-		self.maxsize = size
-		self.rec = shapes.Rectangle(*pos, *size, color=(0, 0, 255), batch=batch)
-
-
-
-
-	def update(self, dt):
-
+	def AirMeter(self):
 		airpart = self.player.air/100
 
-		maxwidth, maxheight = self.maxsize
+		maxwidth, maxheight = (400,40)
 
 
 
 		width = maxwidth * airpart
 
-		self.rec.width = width
-
-
-
-
-
-
+		self.airmeter.width = width
 
 
 
