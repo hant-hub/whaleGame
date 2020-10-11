@@ -23,7 +23,7 @@ def main():
 
 	#init player
 	player = whalestuff.Player(pos = (screen.width, screen.height), size = (150, 75), speed = 1, handler = handler, batch = batch)
-	camera = util.Camera(pos = (0,0), zoom = 0, player = player, window = screen)
+	camera = util.Camera(pos = (0,0), zoom = 1, player = player, handler=handler, window = screen)
 	objects.add(player)
 	objects.add(camera)
 
@@ -33,7 +33,7 @@ def main():
 
 	#link objects
 	player.camera = camera
-	handler.gamePlayHandler(player = player)
+	handler.gamePlayHandler(player = player, camera=camera)
 
 
 	#create test enemy
@@ -41,14 +41,14 @@ def main():
 		objects.add(enemies.FishingBoat(pos = (screen.width/2, screen.height/2 - 100*x), size = (50,25), speed = 1, player = player, objects = objects, handler = handler, camera = camera, batch = batch))
 
 
-	
+	@screen.event
 	def on_draw():
 		"""Where draw call is made"""
 
 		screen.clear()
 		batch.draw()
 
-	screen.on_draw = on_draw
+
 
 	for obj in objects:
 		obj.alive = True
@@ -58,9 +58,16 @@ def main():
 		"""Updates all objects every frame"""
 		
 		cx, cy = camera.pos
+		tx, ty = camera.target
 
-		background.x = cx
-		background.y = cy
+		background.x = ((0-tx) * camera.zoom) + tx + cx
+		background.y = ((0-ty) * camera.zoom) + ty + cy
+
+		background.width = screen.width * camera.zoom
+		background.height = screen.height * camera.zoom
+
+		#background.width = screen.width * camera.zoom
+		#background.height = screen.height * camera.zoom
 
 
 		if len([obj for obj in objects if isinstance(obj, enemies.Enemy) ]) > 110:

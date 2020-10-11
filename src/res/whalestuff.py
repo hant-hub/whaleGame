@@ -80,14 +80,17 @@ class Player(visibleEntity):
 
 		
 		tx,ty = self.handler.target
+		zx, zy = self.camera.target
 		x, y = self.pos
 		dx, dy = self.vel
 		cx, cy = self.camera.pos
 
+		
 		#preprocess target
 
-		tx -= cx
-		ty -= cy
+
+		tx = ((tx - (cx + zx))/self.camera.zoom) + zx
+		ty = ((ty - (cy + zy))/self.camera.zoom) + zy
 
 
 
@@ -197,10 +200,11 @@ class Player(visibleEntity):
 			x, y = parent.pos
 			tx,ty = parent.handler.target
 			cx, cy = parent.camera.pos
+			zx, zy = parent.camera.target
 
 			#preprocess target
-			tx -= cx
-			ty -= cy
+			tx = ((tx - (cx + zx))/parent.camera.zoom) + zx
+			ty = ((ty - (cy + zy))/parent.camera.zoom) + zy
 
 			tx -= x
 			ty -= y

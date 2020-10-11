@@ -17,13 +17,20 @@ class Handler:
 		self.player = None
 
 
-	def gamePlayHandler(self, player):
+	def gamePlayHandler(self, player, camera):
 		"""Handler for direct gameplay.
 
 
 		Defines and pushes the handlers for gameplay onto the hander stack
 		"""
 		self.player=player
+		self.camera=camera
+
+		def on_mouse_scroll(x, y, scroll_x, scroll_y):
+			self.camera.zoom += scroll_y/10
+
+			if self.camera.zoom <= 0:
+				self.camera.zoom = 0.2
 
 
 		def on_mouse_motion(x,y,dx,dy, buttons = None, modifiers = None):
@@ -51,7 +58,7 @@ class Handler:
 				self.player.sprite.opacity = 255
 
 
-		self.window.push_handlers(on_mouse_drag = on_mouse_motion, on_mouse_motion = on_mouse_motion, on_mouse_press=on_mouse_press, on_mouse_release = on_mouse_release)
+		self.window.push_handlers(on_mouse_drag = on_mouse_motion, on_mouse_motion = on_mouse_motion, on_mouse_press=on_mouse_press, on_mouse_release = on_mouse_release, on_mouse_scroll = on_mouse_scroll)
 
 
 

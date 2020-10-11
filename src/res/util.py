@@ -47,16 +47,23 @@ def getClosestPointCircle(center, radius, point):
 class Camera:
 	"""holds all camera logic"""
 
-	def __init__(self, pos, zoom, player, window):
+	def __init__(self, pos, zoom, player, handler, window):
 		self.pos = pos
 		self.zoom = zoom
 		self.player = player
+		self.target = (0,0)
+		self.handler = handler
 		self.window = window
 
 	def update(self, dt):
 		px, py = self.player.pos
+		cx, cy = self.handler.target
+
+		self.target = (px, py)
 
 		tx, ty = -(px - self.window.width/2),-(py - self.window.height/2)
+
+
 		x, y = self.pos
 
 		tx -= x
@@ -90,9 +97,19 @@ class visibleEntity:
 
 		x, y = self.pos
 		cx, cy = self.camera.pos
+		tx, ty = self.camera.target
+		width, height = self.size
 
-		sprite.x = x + cx
-		sprite.y = y + cy
+		sprite.x = ((x-tx) * self.camera.zoom) + cx + tx
+		sprite.y = ((y-ty) * self.camera.zoom) + cy + ty
+
+
+		sprite.width = width * self.camera.zoom
+		sprite.height = height * self.camera.zoom
+
+		self.sprite.anchor_x = (self.sprite.width/3) * 2
+		self.sprite.anchor_y = (self.sprite.height/2)
+
 
 		if rotation != None:
 			sprite.rotation = rotation
@@ -193,6 +210,8 @@ class collision:
 
 		numerator = (px * ax) + (py * ay)
 		denominator = (ax*ax) + (ay*ay)
+
+
 
 		projectionx = (numerator/denominator) * ax
 		projectiony = (numerator/denominator) * ay
