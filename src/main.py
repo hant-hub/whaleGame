@@ -1,5 +1,5 @@
 from pyglet import *
-from res import whalestuff, util, handlers, gui, enemies
+from res import whalestuff, util, handlers, gui, enemies, arena
 from itertools import combinations
 
 
@@ -11,7 +11,7 @@ def main():
 	#initialize graphics
 	screen = window.Window(vsync = True, fullscreen=True)
 	batch = graphics.Batch()
-	background = shapes.Rectangle(x=0, y=0, width=screen.width, height=screen.height, color = (255,0,255), batch=batch)
+	#background = shapes.Rectangle(x=0, y=0, width=screen.width, height=screen.height, color = (255,0,255), batch=batch)
 
 	#init objectset
 	objects = set()
@@ -27,6 +27,9 @@ def main():
 	objects.add(player)
 	objects.add(camera)
 
+	objects.update(arena.Map(k = 30,r = 900,bounds = (screen.width * 5, screen.height * 5), size = 200, camera = camera, batch = batch).circles)
+
+
 	#init GUI
 	Gui = gui.GUI(pos = (0,0), player = player, window = screen, batch = batch)
 	objects.add(Gui)
@@ -37,8 +40,8 @@ def main():
 
 
 	#create test enemy
-	for x in range(125):
-		objects.add(enemies.FishingBoat(pos = (screen.width/2, screen.height/2 - 100*x), size = (50,25), speed = 1, player = player, objects = objects, handler = handler, camera = camera, batch = batch))
+	#for x in range(125):
+	#	objects.add(enemies.FishingBoat(pos = (screen.width/2, screen.height/2 - 100*x), size = (50,25), speed = 1, player = player, objects = objects, handler = handler, camera = camera, batch = batch))
 
 
 	@screen.event
@@ -53,18 +56,18 @@ def main():
 	for obj in objects:
 		obj.alive = True
 
-
+	#@util.timeit
 	def update(dt):
 		"""Updates all objects every frame"""
 		
-		cx, cy = camera.pos
-		tx, ty = camera.target
+		#cx, cy = camera.pos
+		#tx, ty = camera.target
 
-		background.x = ((0-tx) * camera.zoom) + tx + cx
-		background.y = ((0-ty) * camera.zoom) + ty + cy
+		#background.x = ((0-tx) * camera.zoom) + tx + cx
+		#background.y = ((0-ty) * camera.zoom) + ty + cy
 
-		background.width = screen.width * camera.zoom
-		background.height = screen.height * camera.zoom
+		#background.width = screen.width * camera.zoom
+		#background.height = screen.height * camera.zoom
 
 		#background.width = screen.width * camera.zoom
 		#background.height = screen.height * camera.zoom

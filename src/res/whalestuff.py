@@ -77,7 +77,7 @@ class Player(visibleEntity):
 			self.sprite.opacity = 255
 
 
-
+		self.speed_limit()
 		
 		tx,ty = self.handler.target
 		zx, zy = self.camera.target
@@ -121,6 +121,8 @@ class Player(visibleEntity):
 		conditional movement such as dashes or any other conditional movment options.
 		"""
 
+
+
 		tx, ty = target
 		x, y = pos
 		dx, dy = vel
@@ -145,6 +147,20 @@ class Player(visibleEntity):
 		y += dy * dt
 
 		return (x,y,dx,dy)
+
+	def speed_limit(self):
+		"""Prevents Enemy from moving too fast"""
+		dx, dy = self.vel
+		speed = math.hypot(*self.vel)
+
+		if speed > 800:
+			dx /= speed
+			dy /= speed
+
+			dx *= 800
+			dy *= 800
+
+		self.vel = (dx,dy)
 
 
 	def hit(self, obj):

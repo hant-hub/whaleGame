@@ -69,8 +69,8 @@ class Camera:
 		tx -= x
 		ty -= y
 
-		x += tx * dt
-		y += ty * dt
+		x += tx * dt * (2/self.zoom)
+		y += ty * dt * (2/self.zoom)
 
 		self.pos = (x,y)
 
@@ -100,8 +100,8 @@ class visibleEntity:
 		tx, ty = self.camera.target
 		width, height = self.size
 
-		sprite.x = ((x-tx) * self.camera.zoom) + cx + tx
-		sprite.y = ((y-ty) * self.camera.zoom) + cy + ty
+		sprite.x = ((x-tx) * self.camera.zoom) + cx + (tx)
+		sprite.y = ((y-ty) * self.camera.zoom) + cy + (ty)
 
 
 		sprite.width = width * self.camera.zoom

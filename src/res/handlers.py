@@ -29,8 +29,8 @@ class Handler:
 		def on_mouse_scroll(x, y, scroll_x, scroll_y):
 			self.camera.zoom += scroll_y/10
 
-			if self.camera.zoom <= 0:
-				self.camera.zoom = 0.2
+			if self.camera.zoom <= 0.1:
+				self.camera.zoom = 0.1
 
 
 		def on_mouse_motion(x,y,dx,dy, buttons = None, modifiers = None):
