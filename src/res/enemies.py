@@ -7,6 +7,7 @@ import math
 from res.util import visibleEntity, getClosestPointCircle
 from random import randint, random
 from res.Projectiles import ShootHarpoon, Harpoon
+from res.arena import Planet
 
 
 
@@ -177,9 +178,12 @@ class FishingBoat(Enemy):
 		if type(obj) == Enemy:
 			pass
 
-		elif ( not isinstance(obj, (Harpoon, Enemy) )) and ( not obj.dive):
+		elif ( not isinstance(obj, (Harpoon, Enemy, Planet) )) and ( not obj.dive):
 			clock.unschedule(self.fire)
 			self.alive = False
+
+		else:
+			pass
 
 
 

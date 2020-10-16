@@ -128,6 +128,8 @@ class collision:
 	"""static class for collision functions"""
 
 
+
+
 	def calculateVerticies(sprite):
 		"""converts sprite/rec object into world space vertecies
 
@@ -137,6 +139,8 @@ class collision:
 		of each vertex. This function then returns a list of the vertecies sorted clockwise around the
 		rectangle's center
 		"""
+
+
 
 		#grab relavent data
 		rotation = math.radians(sprite.rotation)
@@ -177,12 +181,24 @@ class collision:
 
 
 
-	def calculateAxis(verticies):
+	def calculateAxisCircle(center, verticies):
+
+		point = (math.inf, math.inf)
+		for v in verticies:
+			if math.dist(v, center) < math.dist(point, center):
+				point = v
+
+
+		return point
+
+	def calculateAxis(verticies, sprite, verticies2):
 		"""Calculates two vectors to be used as projection axes
 
 		Takes two surface normals of a set of verticies that are
 		perpendicular. (this only works for rectangles) These are then returned in a tuple
 		"""
+
+
 		ur = verticies[0]
 		lr = verticies[1]
 		ll = verticies[2]
@@ -193,10 +209,12 @@ class collision:
 		axis2 = tuple(map((lambda i, j: i-j),  ur, lr))
 
 
-		return (axis1, axis2)
+		return {axis1, axis2}
 
 
-	def ScalerProjection(axis, point):
+
+
+	def ScalerProjection(axis, point, sprite):
 		"""projects a point onto an axis and returns a scalar based on where it landed on the axis
 
 
@@ -208,18 +226,37 @@ class collision:
 		ax, ay = axis
 		px, py = point
 
+		#dist = math.hypot(*axis)
+
+		#ax /= dist
+		#ay /= dist
+
 		numerator = (px * ax) + (py * ay)
-		denominator = (ax*ax) + (ay*ay)
 
 
 
-		projectionx = (numerator/denominator) * ax
-		projectiony = (numerator/denominator) * ay
+
+		output = (numerator)
+		
 
 
-		output = (projectionx * ax) + (projectiony * ay)
+		
 
-		return output
+		return {output}
+
+
+	def ComputeCircleCollision(circle, rec, returnType = bool):
+		point = collision.calculateAxisCircle(center = circle.position, verticies = collision.calculateVerticies(rec))
+
+		if math.dist(point, circle.position) < circle.radius:
+			if returnType == bool:
+				return True
+			else:
+				return point
+
+		return False
+
+
 
 
 	def ComputeCollision(recA, recB):
@@ -230,21 +267,27 @@ class collision:
 		2d collision detection. This function is only for fine grain collision detection
 		as it is rather expensive in computing resources.
 		"""
+
+		if isinstance(recA, shapes.Circle):
+			return collision.ComputeCircleCollision(circle = recA, rec = recB, returnType = bool)
+		elif isinstance(recB, shapes.Circle):
+			return collision.ComputeCircleCollision(circle = recB, rec = recA, returnType = bool)
 		
 		
 		axes = set()
 
 		#rec A
 		verticiesA = collision.calculateVerticies(recA)
-		axis1, axis2 = collision.calculateAxis(verticiesA)
-		axes.add(axis1)
-		axes.add(axis2)
+		verticiesB = collision.calculateVerticies(recB)
+
+
+		axisA = collision.calculateAxis(verticiesA, recA, verticiesB)
+		axisB = collision.calculateAxis(verticiesB, recB, verticiesA)
+		axes |= axisA
+		axes |= axisB
 
 		#rec B
-		verticiesB = collision.calculateVerticies(recB)
-		axis1b, axis2b = collision.calculateAxis(verticiesB)
-		axes.add(axis1b)
-		axes.add(axis2b)
+		
 
 
 		for axis in axes:
@@ -252,12 +295,12 @@ class collision:
 			projectionB = set()
 
 			for point in verticiesA:
-				projection = collision.ScalerProjection(axis, point)
-				projectionA.add(projection)
+				projection = collision.ScalerProjection(axis, point, recA)
+				projectionA |= projection
 
 			for point in verticiesB:
-				projection = collision.ScalerProjection(axis, point)
-				projectionB.add(projection)
+				projection = collision.ScalerProjection(axis, point, recB)
+				projectionB |= projection
 
 	
 
@@ -267,6 +310,15 @@ class collision:
 
 		
 		return True
+
+
+	def calculateRadius(sprite):
+		if isinstance(sprite, shapes.Circle):
+			return sprite.radius
+
+		else:
+			return (math.hypot(sprite.width, sprite.height))
+
 
 
 	def detectCollision(recA, recB):
@@ -279,11 +331,11 @@ class collision:
 		This is the only collision function that should be used outside of this class.
 		"""
 
-		widthA, heightA = (recA.width, recA.height)
-		widthB, heightB = (recB.width, recB.height)
 
-		radiusA = math.hypot(widthA, heightA)
-		radiusB = math.hypot(widthB, heightB)
+
+
+		radiusA = collision.calculateRadius(recA)
+		radiusB = collision.calculateRadius(recB)
 
 		ax, ay = recA.position
 		bx, by = recB.position

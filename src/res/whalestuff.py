@@ -5,9 +5,10 @@
 
 from pyglet import *
 import math
-from res.util import visibleEntity
+from res.util import visibleEntity, getClosestPointCircle, collision
 from res.enemies import Enemy
 from res.Projectiles import Harpoon
+from res.arena import Planet
 
 
 
@@ -172,6 +173,45 @@ class Player(visibleEntity):
 
 		if ((type(obj) == Enemy)):
 			pass
+
+		elif (type(obj) == Planet):
+			# px, py = collision.ComputeCircleCollision(circle = obj.sprite, rec = self.sprite, returnType = None)
+			# verticiesRec = collision.calculateVerticies(self.sprite)
+			# projectionsRec = set()
+			# dist = math.hypot(px,py)
+			# px /= dist
+			# py /= dist
+			# for v in verticiesRec:
+			# 	projectionsRec |= (collision.ScalerProjection(axis = (px,py), point = (v[0]-obj.pos[0], v[1]-obj.pos[1]), sprite = None))
+
+			# projectionCircle = {list(collision.ScalerProjection(axis = (px,py), point = (0,0), sprite = None))[0] + obj.radius, list(collision.ScalerProjection(axis = (px,py), point = (0,0), sprite = None))[0] - obj.radius}
+
+			
+			# #print(px,py)
+
+			# if (max(projectionsRec) >= min(projectionCircle)):
+			# 	print(max(projectionsRec))
+			# 	dist = (max(projectionsRec) - min(projectionCircle))
+			# 	px *= dist
+			# 	py *= dist
+
+			# elif (max(projectionCircle) >= min(projectionsRec)):
+			# 	print(min(projectionsRec))
+			# 	dist = (max(projectionCircle) - min(projectionsRec))
+			# 	px *= dist
+			# 	py *= dist
+
+			# x, y = self.pos
+
+			# x += px
+			# y += py
+			# #print(x,y)
+
+			# self.pos = (x,y)
+			# self.vel = (0,0)
+
+			pass
+
 
 		elif (type(obj) == Harpoon) and self.damage:
 			self.health -= obj.damage

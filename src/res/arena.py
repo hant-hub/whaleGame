@@ -11,7 +11,7 @@ class Planet:
 		self.pos = pos
 		self.radius = radius
 		self.camera = camera
-		self.circle = shapes.Circle(*pos, radius = radius, color=(int(np.random.uniform(0, 255)), int(np.random.uniform(0, 255)), int(np.random.uniform(0, 255))), batch = batch)
+		self.sprite = shapes.Circle(*pos, radius = radius, color=(int(np.random.uniform(0, 255)), int(np.random.uniform(0, 255)), int(np.random.uniform(0, 255))), batch = batch)
 
 
 	def update(self, dt):
@@ -22,11 +22,15 @@ class Planet:
 		cx, cy = self.camera.pos
 		tx, ty = self.camera.target
 
-		self.circle.x = ((x-tx) * self.camera.zoom) + cx + (tx)
-		self.circle.y = ((y-ty) * self.camera.zoom) + cy + (ty)
+		self.sprite.x = ((x-tx) * self.camera.zoom) + cx + (tx)
+		self.sprite.y = ((y-ty) * self.camera.zoom) + cy + (ty)
 
 
-		self.circle.radius = self.radius * self.camera.zoom
+		self.sprite.radius = self.radius * self.camera.zoom
+
+
+	def hit(self, obj):
+		pass
 
 
 
@@ -52,7 +56,7 @@ class Map:
 
 	def make_circles(self):
 		for point in self.centers:
-			radius = np.random.uniform(2, self.size)
+			radius = np.random.uniform(30, self.size)
 			self.circles.add(Planet(pos = point, radius = radius, camera = self.camera, batch = self.batch))
 
 

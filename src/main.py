@@ -27,7 +27,7 @@ def main():
 	objects.add(player)
 	objects.add(camera)
 
-	objects.update(arena.Map(k = 30,r = 900,bounds = (screen.width * 5, screen.height * 5), size = 200, camera = camera, batch = batch).circles)
+	objects.update(arena.Map(k = 30,r = 900,bounds = (screen.width, screen.height), size = 200, camera = camera, batch = batch).circles)
 
 
 	#init GUI
@@ -40,8 +40,8 @@ def main():
 
 
 	#create test enemy
-	#for x in range(125):
-	#	objects.add(enemies.FishingBoat(pos = (screen.width/2, screen.height/2 - 100*x), size = (50,25), speed = 1, player = player, objects = objects, handler = handler, camera = camera, batch = batch))
+	for x in range(10):
+		objects.add(enemies.FishingBoat(pos = (screen.width/2, screen.height/2 - 100*x), size = (50,25), speed = 1, player = player, objects = objects, handler = handler, camera = camera, batch = batch))
 
 
 	@screen.event
@@ -96,7 +96,7 @@ def main():
 		
 
 
-		for obj, obj2 in combinations([obj for obj in objects if isinstance(obj, util.visibleEntity)], r=2):
+		for obj, obj2 in combinations([obj for obj in objects if isinstance(obj, (util.visibleEntity, arena.Planet))], r=2):
 			if util.collision.detectCollision(recA = obj.sprite, recB = obj2.sprite) and (obj != obj2):
 				obj.hit(obj2)
 				obj2.hit(obj)
