@@ -61,9 +61,6 @@ def main():
 	@screen.event
 	def on_draw():
 		"""Where draw call is made"""
-		camera.update(dt = 0.01)
-		for obj in [obj for obj in objects if isinstance(obj, (util.visibleEntity, arena.Planet))]:
-			obj.updatevisual()
 		batch.draw()
 
 
@@ -88,7 +85,7 @@ def main():
 		#background.height = screen.height * camera.zoom
 
 
-		if len([obj for obj in objects if isinstance(obj, enemies.Enemy) ]) > 110:
+		if len([obj for obj in objects if isinstance(obj, enemies.Enemy) ]) > 40:
 			sacrifice = objects.pop()
 			if isinstance(sacrifice, enemies.Enemy):
 				sacrifice.delete()
@@ -127,6 +124,7 @@ def main():
 
 	clock.schedule_interval(update,1/240)
 	app.run()
+
 
 if __name__ == "__main__":
 	main()

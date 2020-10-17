@@ -66,17 +66,17 @@ class Camera:
 
 		dist = math.dist(self.pos, (tx,ty))
 
-		if dist > 30*(2/self.zoom):
+	
 
-			x, y = self.pos
+		x, y = self.pos
 
-			tx -= x
-			ty -= y
+		tx -= x
+		ty -= y
 
-			x += tx * dt * (2/self.zoom)
-			y += ty * dt * (2/self.zoom)
+		x += tx * dt * (2/self.zoom)
+		y += ty * dt * (2/self.zoom)
 
-			self.pos = (x,y)
+		self.pos = (x,y)
 
 
 
@@ -111,8 +111,8 @@ class visibleEntity:
 		sprite.width = width * self.camera.zoom
 		sprite.height = height * self.camera.zoom
 
-		self.sprite.anchor_x = (self.sprite.width/3) * 2
-		self.sprite.anchor_y = (self.sprite.height/2)
+		sprite.anchor_x = (sprite.width/3) * 2
+		sprite.anchor_y = (sprite.height/2)
 
 
 		if rotation != None:

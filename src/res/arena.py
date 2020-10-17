@@ -33,9 +33,6 @@ class Planet:
 	def hit(self, obj, dt):
 		pass
 
-	def update(self, dt):
-		pass
-
 
 	def direction(self,obj):
 		#relative to obj1
