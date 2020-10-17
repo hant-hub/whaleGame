@@ -90,6 +90,8 @@ def main():
 			if isinstance(sacrifice, enemies.Enemy):
 				sacrifice.delete()
 				del sacrifice
+			else:
+				objects.add(sacrifice)
 
 		
 
@@ -124,7 +126,6 @@ def main():
 
 	clock.schedule_interval(update,1/240)
 	app.run()
-
 
 if __name__ == "__main__":
 	main()
