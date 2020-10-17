@@ -173,7 +173,7 @@ class FishingBoat(Enemy):
 		self.vel = (dx,dy)
 
 
-	def hit(self, obj):
+	def hit(self, obj, dt):
 		"""handles collision behavior"""
 
 		if type(obj) == Enemy:

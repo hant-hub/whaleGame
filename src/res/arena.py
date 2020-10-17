@@ -30,7 +30,10 @@ class Planet:
 		self.sprite.radius = (self.radius) * self.camera.zoom
 
 
-	def hit(self, obj):
+	def hit(self, obj, dt):
+		pass
+
+	def update(self, dt):
 		pass
 
 

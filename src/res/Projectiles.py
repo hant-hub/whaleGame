@@ -67,7 +67,7 @@ class Harpoon(visibleEntity):
 		self.vel = (dx,dy)
 
 
-	def hit(self,obj):
+	def hit(self,obj, dt):
 		"""handles behavior when colliding with other objects. Currently does nothing"""
 		if type(obj) == Planet:
 			clock.unschedule(self.kill)

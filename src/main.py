@@ -54,13 +54,16 @@ def main():
 
 
 	#create test enemy
-	# for x in range(10):
-	# 	objects.add(enemies.FishingBoat(pos = (screen.width/2, screen.height/2 - 100*x), size = (50,25), speed = 1, player = player, objects = objects, handler = handler, camera = camera, batch = batch, group = foreground))
+	for x in range(50):
+		objects.add(enemies.FishingBoat(pos = (screen.width/2, screen.height/2 - 100*x), size = (50,25), speed = 1, player = player, objects = objects, handler = handler, camera = camera, batch = batch, group = foreground))
 
 
 	@screen.event
 	def on_draw():
 		"""Where draw call is made"""
+		camera.update(dt = 0.01)
+		for obj in [obj for obj in objects if isinstance(obj, (util.visibleEntity, arena.Planet))]:
+			obj.updatevisual()
 		batch.draw()
 
 
@@ -97,21 +100,19 @@ def main():
 			objects.remove(corpse)
 			corpse.delete()
 			del corpse
-
-
-
 		
-		
-
 		for obj in objects:
 			obj.update(dt)
-		
+
 
 
 		for obj, obj2 in combinations([obj for obj in objects if isinstance(obj, (util.visibleEntity, arena.Planet))], r=2):
 			if util.collision.detectCollision(recA = obj.sprite, recB = obj2.sprite) and (obj != obj2) and (type(obj) != type(obj2)):
-				obj.hit(obj2)
-				obj2.hit(obj)
+				obj.hit(obj2, dt)
+				obj2.hit(obj, dt)
+
+
+
 
 
 
@@ -124,7 +125,7 @@ def main():
 
 
 
-	clock.schedule_interval(update,1/120)
+	clock.schedule_interval(update,1/240)
 	app.run()
 
 if __name__ == "__main__":

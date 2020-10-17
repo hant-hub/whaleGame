@@ -59,20 +59,24 @@ class Camera:
 		px, py = self.player.pos
 		cx, cy = self.handler.target
 
+
 		self.target = (px, py)
 
 		tx, ty = -(px - self.window.width/2),-(py - self.window.height/2)
 
+		dist = math.dist(self.pos, (tx,ty))
 
-		x, y = self.pos
+		if dist > 30*(2/self.zoom):
 
-		tx -= x
-		ty -= y
+			x, y = self.pos
 
-		x += tx * dt * (2/self.zoom)
-		y += ty * dt * (2/self.zoom)
+			tx -= x
+			ty -= y
 
-		self.pos = (x,y)
+			x += tx * dt * (2/self.zoom)
+			y += ty * dt * (2/self.zoom)
+
+			self.pos = (x,y)
 
 
 
@@ -230,24 +234,16 @@ class collision:
 		#ax /= dist
 		#ay /= dist
 
-		numerator = (px * ax) + (py * ay)
-
-
-
-
-		output = (numerator)
+		output = (px * ax) + (py * ay)
 		
 
-
-		
-
-		return {output}
+		return output
 
 
 	def ComputeCircleCollision(circle, rec, returnType = bool):
 		point = collision.calculateAxisCircle(center = circle.position, verticies = collision.calculateVerticies(rec))
 
-		if math.dist(point, circle.position) < (circle.radius + 600):
+		if math.dist(point, circle.position) < (circle.radius):
 			if returnType == bool:
 				return True
 			else:
@@ -296,11 +292,11 @@ class collision:
 
 			for point in verticiesA:
 				projection = collision.ScalerProjection(axis, point, recA)
-				projectionA |= projection
+				projectionA.add(projection)
 
 			for point in verticiesB:
 				projection = collision.ScalerProjection(axis, point, recB)
-				projectionB |= projection
+				projectionB.add(projection)
 
 	
 
