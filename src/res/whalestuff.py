@@ -19,8 +19,8 @@ class Player(visibleEntity):
 	it makes packaging of all the methods and data for the player far more convinient to set up.
 	And should multiplayer ever become feature we have the option of instantiating more instances of player
 	"""
-	def __init__(self, pos, size, speed, handler, batch):
-		super().__init__(pos,size, shapes.Rectangle(*pos, *size, color=(255, 255, 0), batch=batch))
+	def __init__(self, pos, size, speed, handler, batch, group):
+		super().__init__(pos,size, shapes.Rectangle(*pos, *size, color=(255, 255, 0), batch=batch, group = group))
 
 
 
@@ -35,7 +35,7 @@ class Player(visibleEntity):
 		self.vel = (0,0)
 		self.speed = speed
 		self.handler = handler
-		self.turnspeed = 0.1
+		self.turnspeed = 0.03
 
 		#diving flag
 		self.dive = False
@@ -175,42 +175,13 @@ class Player(visibleEntity):
 			pass
 
 		elif (type(obj) == Planet):
-			# px, py = collision.ComputeCircleCollision(circle = obj.sprite, rec = self.sprite, returnType = None)
-			# verticiesRec = collision.calculateVerticies(self.sprite)
-			# projectionsRec = set()
-			# dist = math.hypot(px,py)
-			# px /= dist
-			# py /= dist
-			# for v in verticiesRec:
-			# 	projectionsRec |= (collision.ScalerProjection(axis = (px,py), point = (v[0]-obj.pos[0], v[1]-obj.pos[1]), sprite = None))
 
-			# projectionCircle = {list(collision.ScalerProjection(axis = (px,py), point = (0,0), sprite = None))[0] + obj.radius, list(collision.ScalerProjection(axis = (px,py), point = (0,0), sprite = None))[0] - obj.radius}
+			dx, dy = obj.find_repulsion_vector(self)
+
+			self.vel = ((self.vel[0] + (dx*1.05)), (self.vel[1] + (dy*1.05)))
+
 
 			
-			# #print(px,py)
-
-			# if (max(projectionsRec) >= min(projectionCircle)):
-			# 	print(max(projectionsRec))
-			# 	dist = (max(projectionsRec) - min(projectionCircle))
-			# 	px *= dist
-			# 	py *= dist
-
-			# elif (max(projectionCircle) >= min(projectionsRec)):
-			# 	print(min(projectionsRec))
-			# 	dist = (max(projectionCircle) - min(projectionsRec))
-			# 	px *= dist
-			# 	py *= dist
-
-			# x, y = self.pos
-
-			# x += px
-			# y += py
-			# #print(x,y)
-
-			# self.pos = (x,y)
-			# self.vel = (0,0)
-
-			pass
 
 
 		elif (type(obj) == Harpoon) and self.damage:

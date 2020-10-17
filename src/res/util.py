@@ -183,10 +183,9 @@ class collision:
 
 	def calculateAxisCircle(center, verticies):
 
-		point = (math.inf, math.inf)
-		for v in verticies:
-			if math.dist(v, center) < math.dist(point, center):
-				point = v
+
+
+		point = min(verticies, key=lambda x: math.dist(x,center))
 
 
 		return point
@@ -248,7 +247,7 @@ class collision:
 	def ComputeCircleCollision(circle, rec, returnType = bool):
 		point = collision.calculateAxisCircle(center = circle.position, verticies = collision.calculateVerticies(rec))
 
-		if math.dist(point, circle.position) < circle.radius:
+		if math.dist(point, circle.position) < (circle.radius + 600):
 			if returnType == bool:
 				return True
 			else:
@@ -267,8 +266,9 @@ class collision:
 		2d collision detection. This function is only for fine grain collision detection
 		as it is rather expensive in computing resources.
 		"""
-
-		if isinstance(recA, shapes.Circle):
+		if isinstance(recA, shapes.Circle) and isinstance(recB, shapes.Circle):
+			return False
+		elif isinstance(recA, shapes.Circle):
 			return collision.ComputeCircleCollision(circle = recA, rec = recB, returnType = bool)
 		elif isinstance(recB, shapes.Circle):
 			return collision.ComputeCircleCollision(circle = recB, rec = recA, returnType = bool)

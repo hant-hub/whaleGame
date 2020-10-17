@@ -58,13 +58,14 @@ class FishingBoat(Enemy):
 	health = low
 	"""
 
-	def __init__(self, pos, size, speed, player, objects, handler, camera, batch):
-		super().__init__(pos,size, shapes.Rectangle(*pos, *size, color=(0, 255, 255), batch=batch))
+	def __init__(self, pos, size, speed, player, objects, handler, camera, batch, group):
+		super().__init__(pos,size, shapes.Rectangle(*pos, *size, color=(0, 255, 255), batch=batch, group=group))
 		self.sprite.anchor_x = (self.sprite.width/2)
 		self.sprite.anchor_y = (self.sprite.height/2)
 
 
 		self.batch = batch
+		self.group = group
 
 
 		self.vel = (0,0)
@@ -178,7 +179,15 @@ class FishingBoat(Enemy):
 		if type(obj) == Enemy:
 			pass
 
-		elif ( not isinstance(obj, (Harpoon, Enemy, Planet) )) and ( not obj.dive):
+		elif (type(obj) == Planet):
+
+			dx, dy = obj.find_repulsion_vector(self)
+
+			self.vel = ((self.vel[0] + (dx*1.05)), (self.vel[1] + (dy*1.05)))
+
+
+
+		elif ( not isinstance(obj, (Harpoon, Enemy) )) and ( not obj.dive):
 			clock.unschedule(self.fire)
 			self.alive = False
 

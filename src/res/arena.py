@@ -1,5 +1,6 @@
 import numpy as np
 from pyglet import *
+import math
 
 
 
@@ -7,11 +8,11 @@ from pyglet import *
 
 class Planet:
 
-	def __init__(self, pos, radius, camera, batch):
+	def __init__(self, pos, radius, camera, batch, group):
 		self.pos = pos
 		self.radius = radius
 		self.camera = camera
-		self.sprite = shapes.Circle(*pos, radius = radius, color=(int(np.random.uniform(0, 255)), int(np.random.uniform(0, 255)), int(np.random.uniform(0, 255))), batch = batch)
+		self.sprite = shapes.Circle(*pos, radius = radius, color=(int(np.random.uniform(0, 255)), int(np.random.uniform(0, 255)), int(np.random.uniform(0, 255))), batch = batch, group=group)
 
 
 	def update(self, dt):
@@ -26,11 +27,56 @@ class Planet:
 		self.sprite.y = ((y-ty) * self.camera.zoom) + cy + (ty)
 
 
-		self.sprite.radius = self.radius * self.camera.zoom
+		self.sprite.radius = (self.radius) * self.camera.zoom
 
 
 	def hit(self, obj):
 		pass
+
+
+	def direction(self,obj):
+		#relative to obj1
+
+		x1,y1 = self.pos
+		x2,y2 = obj.pos
+
+		x2 -= x1
+		y2 -= y1
+
+		#divide rise and run by the total distance to get dir on unit circle. ie: unit length step towards obj2
+
+		dist = math.dist(self.pos, obj.pos)
+
+		x2 /= dist
+		y2 /= dist
+
+
+		return (x2,y2)
+
+
+	def find_repulsion_vector(self, planet):
+		
+		#calculate magnitude of gravitational force
+		M = 50
+		m = 500
+
+		dist = math.dist(self.pos,planet.pos) - (self.radius+50)
+
+		r =  dist*dist
+
+		magnitude = (M*m)/math.sqrt(r*(r+0.15))
+
+		vector = self.direction(planet)
+
+		vector_force = (magnitude*vector[0]*10, magnitude*vector[1]*10)
+
+		return vector_force
+
+
+
+
+
+
 
 
 
@@ -39,11 +85,12 @@ class Planet:
 class Map:
 
 
-	def __init__(self,k,r, size, bounds, camera, batch):
+	def __init__(self,k,r, size, bounds, camera, batch, group):
 		self.k = k
 		self.r=r
 		self.width, self.height = bounds
 		self.batch = batch
+		self.group = group
 
 		self.centers = self.Poission(k,r)
 		self.circles = set()
@@ -56,8 +103,8 @@ class Map:
 
 	def make_circles(self):
 		for point in self.centers:
-			radius = np.random.uniform(30, self.size)
-			self.circles.add(Planet(pos = point, radius = radius, camera = self.camera, batch = self.batch))
+			radius = np.random.uniform(self.size/10, self.size-500)
+			self.circles.add(Planet(pos = point, radius = radius, camera = self.camera, batch = self.batch, group = self.group))
 
 
 

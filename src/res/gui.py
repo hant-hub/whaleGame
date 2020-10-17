@@ -9,16 +9,16 @@ from pyglet import *
 class GUI:
 	"""main interface for GUI"""
 
-	def __init__(self, pos, player, window, batch):
+	def __init__(self, pos, player, window, batch, group):
 		self.pos = pos
 		self.player = player
 
 
 		#create healthbar
-		self.healthbar = shapes.Rectangle(*(30, window.height - 60), *(400, 40), color=(255, 0, 0), batch=batch)
+		self.healthbar = shapes.Rectangle(*(30, window.height - 60), *(400, 40), color=(255, 0, 0), batch=batch, group=group)
 
 		#create airmeter
-		self.airmeter = shapes.Rectangle(*(window.width-500, window.height - 60), *(400,40), color=(0, 0, 255), batch=batch)
+		self.airmeter = shapes.Rectangle(*(window.width-500, window.height - 60), *(400,40), color=(0, 0, 255), batch=batch, group=group)
 
 	def update(self, dt):
 		self.HealthBar()

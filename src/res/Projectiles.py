@@ -9,14 +9,15 @@ instantiating projectiles with functions
 from pyglet import *
 import math
 from res.util import visibleEntity
+from res.arena import Planet
 
 
 
 class Harpoon(visibleEntity):
 	"""Basic projectile for Enemies"""
 
-	def __init__(self, pos, size, speed, vel, side, camera, batch):
-		super().__init__(pos,size, shapes.Rectangle(*pos, *size, color=(255, 255, 255), batch=batch))
+	def __init__(self, pos, size, speed, vel, side, camera, batch, group):
+		super().__init__(pos,size, shapes.Rectangle(*pos, *size, color=(255, 255, 255), batch=batch, group=group))
 		dx, dy = vel
 
 		self.sprite.anchor_x = (self.sprite.width/2)
@@ -68,7 +69,12 @@ class Harpoon(visibleEntity):
 
 	def hit(self,obj):
 		"""handles behavior when colliding with other objects. Currently does nothing"""
-		pass
+		if type(obj) == Planet:
+			clock.unschedule(self.kill)
+			self.kill(0)
+
+		else:
+			pass
 
 
 	def kill(self, dt):
@@ -89,4 +95,4 @@ def ShootHarpoon(me, other, output):
 	tx /= math.dist(other.pos, me.pos)
 	ty /= math.dist(other.pos, me.pos)
 
-	output.add(Harpoon(pos = me.pos, size = (30,10), speed = 15, vel = (tx,ty), side = type(me), camera = me.camera, batch = me.batch))
+	output.add(Harpoon(pos = me.pos, size = (30,10), speed = 15, vel = (tx,ty), side = type(me), camera = me.camera, batch = me.batch, group = me.group))
