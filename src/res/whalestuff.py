@@ -176,21 +176,21 @@ class Player(visibleEntity):
 
 		elif (type(obj) == Planet):
 
-			# dx, dy = obj.find_repulsion_vector(self)
+			dx, dy = obj.find_repulsion_vector(self)
 
-			# self.vel = ((self.vel[0] + (dx*1.05)), (self.vel[1] + (dy*1.05)))
+			self.vel = ((self.vel[0] + (dx*1.05)), (self.vel[1] + (dy*1.05)))
 
-			ox, oy = obj.direction(self)
-			dx, dy = self.vel
-			x, y = self.pos
-			dist = math.hypot(dx,dy)
+			# ox, oy = obj.direction(self)
+			# dx, dy = self.vel
+			# x, y = self.pos
+			# dist = math.hypot(dx,dy)
 
 
-			mag = collision.ScalerProjection(axis = (-oy, ox), point = (dx,dy), sprite = None)
-			pen =  collision.ScalerProjection(axis = (-ox,-oy), point = (dx,dy), sprite = None)
+			# mag = collision.ScalerProjection(axis = (-oy, ox), point = (dx,dy), sprite = None)
+			# pen =  collision.ScalerProjection(axis = (-ox,-oy), point = (dx,dy), sprite = None)
 
-			# dx /= dist
-			# dy /= dist
+			# # dx /= dist
+			# # dy /= dist
 
 
 
@@ -203,16 +203,16 @@ class Player(visibleEntity):
 			# dx *+ dist
 			# dy *= dist
 
-			if pen < 0.8*dist:
-				x += ox*dist*dt
-				y += oy*dist*dt
-				self.vel = (-oy * mag, ox * mag)
-			else:
-				x -= dx*dt*3
-				y -= dy*dt*3
-				self.vel = (dx/3,dy/3)
+			# if pen < 0.8*dist:
+			# 	x += ox*dist*dt
+			# 	y += oy*dist*dt
+			# 	self.vel = (-oy * mag, ox * mag)
+			# else:
+			# 	x -= dx*dt*3
+			# 	y -= dy*dt*3
+			# 	self.vel = (dx/3,dy/3)
 
-			self.pos = (x,y)
+			# self.pos = (x,y)
 
 
 

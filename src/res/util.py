@@ -243,7 +243,7 @@ class collision:
 	def ComputeCircleCollision(circle, rec, returnType = bool):
 		point = collision.calculateAxisCircle(center = circle.position, verticies = collision.calculateVerticies(rec))
 
-		if math.dist(point, circle.position) < (circle.radius):
+		if math.dist(point, circle.position) < (circle.radius+100):
 			if returnType == bool:
 				return True
 			else:

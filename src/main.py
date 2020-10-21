@@ -54,8 +54,8 @@ def main():
 
 
 	#create test enemy
-	for x in range(50):
-		objects.add(enemies.FishingBoat(pos = (screen.width/2, screen.height/2 - 100*x), size = (50,25), speed = 1, player = player, objects = objects, handler = handler, camera = camera, batch = batch, group = foreground))
+	# for x in range(50):
+	# 	objects.add(enemies.FishingBoat(pos = (screen.width/2, screen.height/2 - 100*x), size = (50,25), speed = 1, player = player, objects = objects, handler = handler, camera = camera, batch = batch, group = foreground))
 
 
 	@screen.event
