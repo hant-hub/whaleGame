@@ -41,7 +41,7 @@ def main():
 
 
 	#generate Map
-	objects.update(arena.Map(k = 30,r = 1000,bounds = (screen.width*3, screen.height*3), size = 900, camera = camera, batch = batch, group = foreground).circles)
+	objects.update(arena.Map(k = 30,r = 1000,bounds = (screen.width*3, screen.height*3), size = 900, camera = camera, batch = batch, group = background).circles)
 
 
 	#init GUI
@@ -57,6 +57,7 @@ def main():
 	# for x in range(50):
 	# 	objects.add(enemies.FishingBoat(pos = (screen.width/2, screen.height/2 - 100*x), size = (50,25), speed = 1, player = player, objects = objects, handler = handler, camera = camera, batch = batch, group = foreground))
 
+	objects.add(enemies.Galleon(pos = (screen.width/2, screen.height/2 - 100), speed = 1, player = player, objects = objects, handler = handler, camera = camera, batch = batch, group = foreground))
 
 	@screen.event
 	def on_draw():
@@ -105,7 +106,7 @@ def main():
 
 
 
-		for obj, obj2 in combinations([obj for obj in objects if isinstance(obj, (util.visibleEntity, arena.Planet))], r=2):
+		for obj, obj2 in combinations([obj for obj in objects if isinstance(obj, (util.visibleEntity))], r=2):
 			if util.collision.detectCollision(recA = obj.sprite, recB = obj2.sprite) and (obj != obj2) and (type(obj) != type(obj2)):
 				obj.hit(obj2, dt)
 				obj2.hit(obj, dt)

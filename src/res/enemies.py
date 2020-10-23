@@ -50,6 +50,45 @@ class Enemy(visibleEntity):
 		return (x,y, dx,dy)
 
 
+	def DommingMovement(pos, vel, speed, turnspeed, target, dt, radius = 300):
+
+
+		tdist = math.dist(pos, target)
+		tradius = randint(100,radius)
+
+		tx, ty = getClosestPointCircle(center = target, radius = tradius, point = pos)
+
+		x, y = pos
+		dx, dy = vel
+
+		if tdist > radius:
+			tdx = (tx - x)
+			tdy = (ty - y)
+
+			dx += (tdx - dx) * turnspeed
+			dy += (tdy - dy) * turnspeed
+
+		else:
+			dx /= 2
+			dy /= 2
+
+
+		if dx < 1:
+			dx = 0
+
+		if dy < 1:
+			dy = 0
+
+
+
+		x += dx * dt * speed
+		y += dy * dt * speed
+
+		return (x,y, dx,dy)
+
+
+
+
 
 class FishingBoat(Enemy):
 	"""Simple Enemy
@@ -58,8 +97,8 @@ class FishingBoat(Enemy):
 	health = low
 	"""
 
-	def __init__(self, pos, size, speed, player, objects, handler, camera, batch, group):
-		super().__init__(pos,size, shapes.Rectangle(*pos, *size, color=(0, 255, 255), batch=batch, group=group))
+	def __init__(self, pos, speed, player, objects, handler, camera, batch, group):
+		super().__init__(pos,(50,25), shapes.Rectangle(*pos, *(50,25), color=(0, 255, 255), batch=batch, group=group))
 		self.sprite.anchor_x = (self.sprite.width/2)
 		self.sprite.anchor_y = (self.sprite.height/2)
 
@@ -198,6 +237,99 @@ class FishingBoat(Enemy):
 
 
 
+
+
+
+
+class Galleon(Enemy):
+
+	def __init__(self, pos, speed, player, objects, handler, camera, batch, group):
+		super().__init__(pos,(300,200), shapes.Rectangle(*pos, *(300,200), color=(0, 255, 255), batch=batch, group=group))
+		self.sprite.anchor_x = (self.sprite.width/2)
+		self.sprite.anchor_y = (self.sprite.height/2)
+
+
+		self.batch = batch
+		self.group = group
+
+
+		self.vel = (0,0)
+		
+		self.speed = speed
+		self.handler = handler
+		self.damage = 5
+		self.health = 2
+		self.turnspeed = 0.02
+
+		self.camera = camera
+
+		self.player = player
+
+		self.objects = objects
+
+		self.hitcool = False
+
+
+		#clock.schedule_once(self.setupFire, (random() * 2))
+
+		#death flag
+		self.alive = True
+
+
+
+	def update(self, dt):
+		"""Updates pos and velocity of enemy"""
+
+		if self.health == 0:
+			self.alive = False
+
+
+
+		#anti-overlap
+		self.speed_limit()
+
+
+		#pathfinding
+		x, y = self.pos
+		dx, dy = self.vel
+		target = self.player.pos
+
+		x,y, dx,dy = Enemy.DommingMovement(pos = (x,y), vel = (dx,dy), speed = self.speed, turnspeed = self.turnspeed, target = target, dt = dt, radius = 1000)
+
+		
+
+		self.updatevisual(sprite = self.sprite)
+
+		self.pos = (x,y)
+		self.vel = (dx,dy)
+
+
+	def speed_limit(self):
+		"""Prevents Enemy from moving too fast"""
+		dx, dy = self.vel
+		speed = math.hypot(*self.vel)
+
+		if speed > 100:
+			dx /= speed
+			dy /= speed
+
+			dx *= 100
+			dy *= 100
+
+		self.vel = (dx,dy)
+
+	def hitflip(self, dt):
+		self.hitcool = False
+
+
+	def hit(self, obj, dt):
+		if self.hitcool:
+			return
+
+		if (type(obj) == type(self.player)) and (obj.ram):
+			self.health -= 1
+			self.hitcool = True
+			clock.schedule_once(self.hitflip, 1.5)
 
 
 
