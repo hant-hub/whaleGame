@@ -172,8 +172,8 @@ class collision:
 			vx, vy = v
 
 
-			vx = vx*math.cos(rotation) - vy*math.sin(rotation)
-			vy = vy*math.cos(rotation) + vx*math.sin(rotation)
+			vx, vy = vx*math.cos(rotation) - vy*math.sin(rotation), vy*math.cos(rotation) + vx*math.sin(rotation)
+
 
 			vx += x
 			vy += y

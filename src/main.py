@@ -1,6 +1,7 @@
 from pyglet import *
-from res import whalestuff, util, handlers, gui, enemies, arena
+from res import whalestuff, util, handlers, gui, enemies, arena, Projectiles
 from itertools import combinations
+import math
 
 
 
@@ -11,16 +12,17 @@ def main():
 	#initialize graphics
 	screen = window.Window(vsync = True, fullscreen=True)
 	batch = graphics.Batch()
-	background = graphics.OrderedGroup(0)
-	foreground = graphics.OrderedGroup(1)
-	ui = graphics.OrderedGroup(2)
+	backgrounds = graphics.OrderedGroup(0)
+	backgroundd = graphics.OrderedGroup(1)
+	foreground = graphics.OrderedGroup(2)
+	ui = graphics.OrderedGroup(3)
 
 
 	#import art
 	resource.path = ['res/images']
 	resource.reindex()
 	Background_image = resource.image("Background/Temp_Stars.jpeg")
-	Background = sprite.Sprite(Background_image, batch = batch, group = background)
+	Background = sprite.Sprite(Background_image, batch = batch, group = backgrounds)
 
 	
 	#init objectset
@@ -41,7 +43,7 @@ def main():
 
 
 	#generate Map
-	objects.update(arena.Map(k = 30,r = 1000,bounds = (screen.width*3, screen.height*3), size = 900, camera = camera, batch = batch, group = background).circles)
+	objects.update(arena.Map(k = 30,r = 1000,bounds = (screen.width*3, screen.height*3), size = 900, camera = camera, batch = batch, group = backgroundd).circles)
 
 
 	#init GUI
@@ -54,10 +56,13 @@ def main():
 
 
 	#create test enemy
-	# for x in range(50):
-	# 	objects.add(enemies.FishingBoat(pos = (screen.width/2, screen.height/2 - 100*x), size = (50,25), speed = 1, player = player, objects = objects, handler = handler, camera = camera, batch = batch, group = foreground))
+	# for x in range(5):
+	#  	objects.add(enemies.FishingBoat(pos = (screen.width/2, screen.height/2 - 100*x), speed = 1, player = player, objects = objects, handler = handler, camera = camera, batch = batch, group = foreground))
 
-	objects.add(enemies.Galleon(pos = (screen.width/2, screen.height/2 - 100), speed = 1, player = player, objects = objects, handler = handler, camera = camera, batch = batch, group = foreground))
+	objects.add(enemies.Frigate(pos = (0,0), speed = 1, player = player, objects = objects, handler = handler, camera = camera, batch = batch, group = foreground))
+	objects.add(enemies.Galley(pos = (screen.width/2+400, screen.height/2 - 100), speed = 1, player = player, objects = objects, handler = handler, camera = camera, batch = batch, group = foreground))
+
+	#objects.add(Projectiles.Bomb(pos = (0,0), size = (40,40), speed = 15, fragNum = 8, objects = objects, vel = (1,0), side = None, camera = camera, batch = batch, group = foreground))
 
 	@screen.event
 	def on_draw():
@@ -113,7 +118,7 @@ def main():
 
 
 
-
+		
 
 
 

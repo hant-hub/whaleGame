@@ -7,7 +7,7 @@ from pyglet import *
 import math
 from res.util import visibleEntity, getClosestPointCircle, collision
 from res.enemies import Enemy
-from res.Projectiles import Harpoon
+from res.Projectiles import EnemyProjectile
 from res.arena import Planet
 
 
@@ -219,7 +219,7 @@ class Player(visibleEntity):
 			
 
 
-		elif (type(obj) == Harpoon) and self.damage:
+		elif (isinstance(obj, EnemyProjectile)) and self.damage:
 			self.health -= obj.damage
 			self.damage = False
 			clock.schedule_once(self.FlipBool, 2, "self.damage")

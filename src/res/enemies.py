@@ -6,7 +6,7 @@ from pyglet import *
 import math
 from res.util import visibleEntity, getClosestPointCircle
 from random import randint, random
-from res.Projectiles import ShootHarpoon, Harpoon
+from res.Projectiles import ShootHarpoon, EnemyProjectile, ProgrammableProjectileFire, ShootBomb
 from res.arena import Planet
 
 
@@ -179,7 +179,7 @@ class FishingBoat(Enemy):
 	def fire(self, dt, objects):
 		"""calls projectile method to launch attack"""
 		if math.dist(self.pos, self.player.pos) < 400:
-			ShootHarpoon(me = self, other = self.player, output = self.objects)
+			ShootHarpoon(me = self, other = self.player.pos, output = self.objects)
 
 
 	def avoid_other(self):
@@ -226,7 +226,7 @@ class FishingBoat(Enemy):
 
 
 
-		elif ( not isinstance(obj, (Harpoon, Enemy) )) and ( not obj.dive):
+		elif ( not isinstance(obj, (EnemyProjectile, Enemy) )) and ( not obj.dive):
 			clock.unschedule(self.fire)
 			self.alive = False
 
@@ -241,7 +241,7 @@ class FishingBoat(Enemy):
 
 
 
-class Galleon(Enemy):
+class Galley(Enemy):
 
 	def __init__(self, pos, speed, player, objects, handler, camera, batch, group):
 		super().__init__(pos,(300,200), shapes.Rectangle(*pos, *(300,200), color=(0, 255, 255), batch=batch, group=group))
@@ -270,10 +270,34 @@ class Galleon(Enemy):
 		self.hitcool = False
 
 
-		#clock.schedule_once(self.setupFire, (random() * 2))
+		clock.schedule_once(self.setupFire, (random() * 2))
 
 		#death flag
 		self.alive = True
+
+
+
+	def setupFire(self, dt):
+		clock.schedule_interval(self.fire, 5)
+
+	def spiral(time):
+
+		dx = 10*math.cos(time*2)
+		dy = 10*math.sin(time*2)
+
+		dx *= time**2.5
+		dy *= time**2.5
+
+		return (dx,dy)
+
+	def fire(self, dt):
+		dist = math.dist(self.pos, self.player.pos)
+
+		if dist < 1400:
+			for x in range(8):
+				ProgrammableProjectileFire(me = self, other = self.player, equation = Galley.spiral, rotation = x*(360/8), output = self.objects)
+
+
 
 
 
@@ -282,11 +306,13 @@ class Galleon(Enemy):
 
 		if self.health == 0:
 			self.alive = False
+			clock.unschedule(self.fire)
 
 
 
 		#anti-overlap
 		self.speed_limit()
+		self.avoid_other()
 
 
 		#pathfinding
@@ -318,6 +344,35 @@ class Galleon(Enemy):
 
 		self.vel = (dx,dy)
 
+	def avoid_other(self):
+		"""Prevents enemies from overlapping
+		
+		Code borrowed from Boid algorithm. It creates a repulsive force between enemies
+		so they spread out and aren't clumped together.
+		"""
+		forcex = 0
+		forcey = 0
+		sx, sy = self.pos
+		
+
+		for obj in [obj for obj in self.objects if isinstance(obj, Galley)]:
+
+			if math.dist(self.pos, obj.pos) < 100:
+				
+				bx, by = obj.pos
+
+
+				forcex += sx - bx
+				forcey += sy - by
+		
+		dx, dy = self.vel
+
+
+		dx += forcex * 0.5
+		dy += forcey * 0.5
+
+		self.vel = (dx,dy)
+
 	def hitflip(self, dt):
 		self.hitcool = False
 
@@ -334,3 +389,139 @@ class Galleon(Enemy):
 
 
 
+
+class Frigate(Enemy):
+
+	def __init__(self, pos, speed, player, objects, handler, camera, batch, group):
+		super().__init__(pos,(600,400), shapes.Rectangle(*pos, *(600,400), color=(0, 255, 255), batch=batch, group=group))
+		self.sprite.anchor_x = (self.sprite.width/2)
+		self.sprite.anchor_y = (self.sprite.height/2)
+
+
+		self.batch = batch
+		self.group = group
+
+
+		self.vel = (0,0)
+		
+		self.speed = speed
+		self.handler = handler
+		self.damage = 5
+		self.health = 4
+		self.turnspeed = 0.02
+
+		self.camera = camera
+
+		self.player = player
+
+		self.objects = objects
+
+		self.hitcool = False
+
+
+		clock.schedule_once(self.setupFire, (random() * 2))
+		clock.schedule_once(self.setupFire, (random() * 2) + 1)
+
+		#death flag
+		self.alive = True
+
+
+	def update(self, dt):
+		"""Updates pos and velocity of enemy"""
+
+		if self.health == 0:
+			self.alive = False
+			clock.unschedule(self.fire)
+			clock.unschedule(self.fire)
+
+
+
+		#anti-overlap
+		self.speed_limit()
+		self.avoid_other()
+
+
+		#pathfinding
+		x, y = self.pos
+		dx, dy = self.vel
+		target = self.player.pos
+
+		x,y, dx,dy = Enemy.DommingMovement(pos = (x,y), vel = (dx,dy), speed = self.speed, turnspeed = self.turnspeed, target = target, dt = dt, radius = 1300)
+
+		
+
+		self.updatevisual(sprite = self.sprite)
+
+		self.pos = (x,y)
+		self.vel = (dx,dy)
+
+
+	def hitflip(self, dt):
+		self.hitcool = False
+
+
+	def fire(self, dt):
+		dist = math.dist(self.pos, self.player.pos)
+
+		if dist < 1600:
+			ShootBomb(me = self, other = self.player.pos, fragNum = 4, output = self.objects)
+
+	def setupFire(self, dt):
+		clock.schedule_interval(self.fire, 5)
+
+
+
+
+
+	def hit(self, obj, dt):
+		if self.hitcool:
+			return
+
+		if (type(obj) == type(self.player)) and (obj.ram):
+			self.health -= 1
+			self.hitcool = True
+			clock.schedule_once(self.hitflip, 1.5)
+
+
+	def speed_limit(self):
+		"""Prevents Enemy from moving too fast"""
+		dx, dy = self.vel
+		speed = math.hypot(*self.vel)
+
+		if speed > 100:
+			dx /= speed
+			dy /= speed
+
+			dx *= 100
+			dy *= 100
+
+		self.vel = (dx,dy)
+
+	def avoid_other(self):
+		"""Prevents enemies from overlapping
+		
+		Code borrowed from Boid algorithm. It creates a repulsive force between enemies
+		so they spread out and aren't clumped together.
+		"""
+		forcex = 0
+		forcey = 0
+		sx, sy = self.pos
+		
+
+		for obj in [obj for obj in self.objects if isinstance(obj, Galley)]:
+
+			if math.dist(self.pos, obj.pos) < 100:
+				
+				bx, by = obj.pos
+
+
+				forcex += sx - bx
+				forcey += sy - by
+		
+		dx, dy = self.vel
+
+
+		dx += forcex * 0.5
+		dy += forcey * 0.5
+
+		self.vel = (dx,dy)
