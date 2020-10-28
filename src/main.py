@@ -27,7 +27,7 @@ def main():
 	
 	#init objectset
 	objects = set()
-	chunks = {}
+
 
 
 	#create input handler
