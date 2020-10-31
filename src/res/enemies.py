@@ -8,6 +8,7 @@ from res.util import visibleEntity, getClosestPointCircle
 from random import randint, random
 from res.Projectiles import ShootHarpoon, EnemyProjectile, ProgrammableProjectileFire, ShootBomb
 from res.arena import Planet
+import BossAI
 
 
 
@@ -525,3 +526,20 @@ class Frigate(Enemy):
 		dy += forcey * 0.5
 
 		self.vel = (dx,dy)
+
+
+
+class Galleon(Enemy):
+	def __init__(self, pos, speed, player, objects, handler, camera, batch, group):
+		super().__init__(pos,(50,25), shapes.Rectangle(*pos, *(50,25), color=(0, 255, 255), batch=batch, group=group))
+		self.sprite.anchor_x = (self.sprite.width/2)
+		self.sprite.anchor_y = (self.sprite.height/2)
+
+
+		self.batch = batch
+		self.group = group
+
+
+		self.vel = (0,0)
+		
+		self.brain = BossAI.AiBrain(self)
