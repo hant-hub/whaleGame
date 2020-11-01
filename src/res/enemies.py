@@ -8,7 +8,7 @@ from res.util import visibleEntity, getClosestPointCircle
 from random import randint, random
 from res.Projectiles import ShootHarpoon, EnemyProjectile, ProgrammableProjectileFire, ShootBomb
 from res.arena import Planet
-import BossAI
+from res import BossAI
 
 
 
@@ -531,15 +531,120 @@ class Frigate(Enemy):
 
 class Galleon(Enemy):
 	def __init__(self, pos, speed, player, objects, handler, camera, batch, group):
-		super().__init__(pos,(50,25), shapes.Rectangle(*pos, *(50,25), color=(0, 255, 255), batch=batch, group=group))
+		super().__init__(pos,(700,500), shapes.Rectangle(*pos, *(700,500), color=(0, 255, 255), batch=batch, group=group))
 		self.sprite.anchor_x = (self.sprite.width/2)
 		self.sprite.anchor_y = (self.sprite.height/2)
 
 
 		self.batch = batch
 		self.group = group
+		self.camera = camera
+		self.handler = handler
+		self.speed = speed
+		self.player = player
+		self.turnspeed = 0.02
+		self.objects = objects
+
+		self.health = 6
+		self.hitcool = False
 
 
 		self.vel = (0,0)
 		
 		self.brain = BossAI.AiBrain(self)
+
+		self.brain.history.append("idle")
+		self.brain.addState(self.Idle, "idle", 1, 1)
+		self.brain.addState(self.Bomb, "bomb", 3, 1.5)
+		self.brain.addState(self.Shields, "shields", 2, 2)
+		self.brain.addState(self.SmartShot, "smartshot", 7, 7/3)
+		self.brain.addState(self.machinegunShot, "machinegunshot", 3, 0.1)
+		self.brain.decision = Galleon.decision
+
+
+		self.alive = True
+
+
+	def decision(body, history):
+		if history[-1] == "shields":
+			return "idle"
+		else:
+			return "shields"
+
+	def Idle(_, dt, body):
+		body.hitcool = False
+		pass
+
+	def Bomb(_, dt, body):
+
+		def fire(dt, body):
+			ShootBomb(me = body, other = body.player.pos, fragNum = 4, output = body.objects)
+
+
+		clock.schedule_once(fire, 0.1, body)
+		clock.schedule_once(fire, 0.5, body)
+
+
+	def Shields(_, dt, body):
+		body.hitcool = True
+
+	def SmartShot(_, dt, body):
+		pass
+
+	def machinegunShot(_, dt, body):
+		ShootHarpoon(me = body, other = body.player.pos, output = body.objects)
+
+
+
+	def update(self, dt):
+		print(self.health)
+		self.brain.switch()
+
+		x, y = self.pos
+		dx, dy = self.vel
+		target = self.player.pos
+
+		x,y, dx,dy = Enemy.DommingMovement(pos = (x,y), vel = (dx,dy), speed = self.speed, turnspeed = self.turnspeed, target = target, dt = dt, radius = 2000)
+
+		self.pos = (x,y)
+		self.vel = (dx,dy)
+
+
+		self.updatevisual(sprite = self.sprite)
+
+		if self.health <= 0:
+			self.alive = False
+			self.brain.resetSwitch(None)
+			del self.brain
+
+
+
+
+
+	def hit(self, obj, dt):
+		if self.hitcool:
+			return
+
+		if (type(obj) == type(self.player)) and (obj.ram):
+			self.health -= 1
+			self.hitcool = True
+			clock.schedule_once(self.hitflip, 1.5)
+
+
+	def hitflip(self, dt):
+		self.hitcool = False
+
+
+	def speed_limit(self):
+		"""Prevents Enemy from moving too fast"""
+		dx, dy = self.vel
+		speed = math.hypot(*self.vel)
+
+		if speed > 100:
+			dx /= speed
+			dy /= speed
+
+			dx *= 100
+			dy *= 100
+
+		self.vel = (dx,dy)

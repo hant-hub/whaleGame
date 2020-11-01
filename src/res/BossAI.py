@@ -1,5 +1,6 @@
 import math
 from time import sleep
+from pyglet import *
 
 
 
@@ -12,36 +13,50 @@ class AiBrain:
 
 	def __init__(self, body):
 		self.body = body
-		self.history = [None]
+		self.history = []
 		self.states = {}
 		self.decision = None
+		self.canswitch = True
 
 
 
 	def makestate(self, func, stateName):
 
 		def behavior(*args, **kwargs):
-			self.history.append(stateName)
 			output = func(*args, **kwargs)
-			self.switch()
+
 
 			return output
 		return behavior
 
+	def resetSwitch(self, dt):
+		self.canswitch = True
+		clock.unschedule(self.states[self.history[-1]][0])
 
 
-	def addState(self,behavior, stateName):
+
+	def addState(self,behavior, stateName, stateLength, interval):
 
 		behavior = self.makestate(behavior, stateName)
 
-		self.states[stateName] = behavior
+		self.states[stateName] = (behavior,stateLength, interval)
 	
 
 
 	def switch(self):
-		stateName = self.decision(self.body, self.history)
-		print(stateName)
-		self.states[stateName](self.body)
+		if self.canswitch:
+			stateName = self.decision(self.body, self.history)
+			self.canswitch = False
+			self.history.append(stateName)
+			print(stateName)
+			clock.schedule_interval(self.states[stateName][0], self.states[stateName][2], self.body)
+			clock.schedule_once(self.resetSwitch, self.states[stateName][1])
+		else:
+			pass
+
+
+		
+		#self.states[stateName](self.body)
 
 
 
@@ -52,13 +67,13 @@ if __name__ == "__main__":
 	test = AiBrain(None)
 
 
-	def idle(body):
+	def idle(dt, body):
 		sleep(1)
 
-	def attack(body):
+	def attack(dt, body):
 		sleep(1)
 
-	def defend(body):
+	def defend(dt, body):
 		sleep(1)
 
 	def decision(body, history):
@@ -78,6 +93,11 @@ if __name__ == "__main__":
 
 	test.state = "idle"
 	test.switch()
+	print('hello')
+	test.states[test.history[-1]](None)
+	sleep(2.5)
+	test.switch()
+	test.states[test.history[-1]](None)
 
 
 
