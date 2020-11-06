@@ -109,6 +109,8 @@ class Player(visibleEntity):
 		rotation = math.degrees(math.atan2(dy, dx))
 
 		self.updatevisual(sprite = self.sprite, rotation = -rotation)
+		self.sprite.anchor_x = (self.sprite.width/3) * 2
+		self.sprite.anchor_y = (self.sprite.height/2)
 
 		self.pos = (x,y)
 		self.vel = (dx,dy)

@@ -35,7 +35,7 @@ def main():
 
 
 	#init player
-	player = whalestuff.Player(pos = (screen.width, screen.height), size = (150, 75), speed = 1, handler = handler, batch = batch, group = foreground)
+	player = whalestuff.Player(pos = (0, 0), size = (150, 75), speed = 1, handler = handler, batch = batch, group = foreground)
 	camera = util.Camera(pos = (0,0), zoom = 1, player = player, handler=handler, window = screen)
 	objects.add(player)
 	objects.add(camera)
@@ -62,7 +62,7 @@ def main():
 	#objects.add(enemies.Frigate(pos = (0,0), speed = 1, player = player, objects = objects, handler = handler, camera = camera, batch = batch, group = foreground))
 	#objects.add(enemies.Galley(pos = (screen.width/2+400, screen.height/2 - 100), speed = 1, player = player, objects = objects, handler = handler, camera = camera, batch = batch, group = foreground))
 
-	objects.add(enemies.Galleon(pos = (screen.width/2+400, screen.height/2 - 100), speed = 1, player = player, objects = objects, handler = handler, camera = camera, batch = batch, group = foreground))
+	objects.add(enemies.Galleon(pos = (screen.width/2+400, screen.height/2 - 100), speed = 1, player = player, objects = objects, screen = screen, handler = handler, camera = camera, batch = batch, group = foreground, ui = ui))
 
 
 	@screen.event

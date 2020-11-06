@@ -111,8 +111,8 @@ class visibleEntity:
 		sprite.width = width * self.camera.zoom
 		sprite.height = height * self.camera.zoom
 
-		sprite.anchor_x = (sprite.width/3) * 2
-		sprite.anchor_y = (sprite.height/2)
+		# sprite.anchor_x = sprite.anchor_x*self.camera.zoom
+		# sprite.anchor_y = sprite.anchor_y* self.camera.zoom
 
 
 		if rotation != None:
@@ -147,7 +147,7 @@ class collision:
 
 
 		#grab relavent data
-		rotation = math.radians(sprite.rotation)
+		rotation = math.radians(-sprite.rotation)
 		x, y = sprite.position
 		anchorx, anchory = (sprite.anchor_x, sprite.anchor_y)
 		width, height = (sprite.width, sprite.height)

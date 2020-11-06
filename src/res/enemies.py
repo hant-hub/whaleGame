@@ -151,6 +151,8 @@ class FishingBoat(Enemy):
 		
 
 		self.updatevisual(sprite = self.sprite)
+		self.sprite.anchor_x = (self.sprite.width/2)
+		self.sprite.anchor_y = (self.sprite.height/2)
 
 		self.pos = (x,y)
 		self.vel = (dx,dy)
@@ -325,7 +327,9 @@ class Galley(Enemy):
 
 		
 
-		self.updatevisual(sprite = self.sprite)
+		self.updatevisual(sprite = self.sprite)	
+		self.sprite.anchor_x = (self.sprite.width/2)
+		self.sprite.anchor_y = (self.sprite.height/2)
 
 		self.pos = (x,y)
 		self.vel = (dx,dy)
@@ -452,6 +456,8 @@ class Frigate(Enemy):
 		
 
 		self.updatevisual(sprite = self.sprite)
+		self.sprite.anchor_x = (self.sprite.width/2)
+		self.sprite.anchor_y = (self.sprite.height/2)
 
 		self.pos = (x,y)
 		self.vel = (dx,dy)
@@ -465,7 +471,7 @@ class Frigate(Enemy):
 		dist = math.dist(self.pos, self.player.pos)
 
 		if dist < 1600:
-			ShootBomb(me = self, other = self.player.pos, fragNum = 4, output = self.objects)
+			ShootBomb(me = self, other = self.player.pos, fragNum = 16, output = self.objects)
 
 	def setupFire(self, dt):
 		clock.schedule_interval(self.fire, 5)
@@ -530,7 +536,7 @@ class Frigate(Enemy):
 
 
 class Galleon(Enemy):
-	def __init__(self, pos, speed, player, objects, handler, camera, batch, group):
+	def __init__(self, pos, speed, player, objects, screen, handler, camera, batch, group, ui):
 		super().__init__(pos,(700,500), shapes.Rectangle(*pos, *(700,500), color=(0, 255, 255), batch=batch, group=group))
 		self.sprite.anchor_x = (self.sprite.width/2)
 		self.sprite.anchor_y = (self.sprite.height/2)
@@ -549,15 +555,22 @@ class Galleon(Enemy):
 		self.hitcool = False
 
 
+
+		self.healthbar = shapes.Rectangle(*(screen.width/4,30), *(100, 60), color=(255, 0, 0), batch=batch, group=ui)
+		self.healthbar.anchor_x = 200
+
+
+
 		self.vel = (0,0)
 		
 		self.brain = BossAI.AiBrain(self)
 
+		self.brain.history.append("shields")
 		self.brain.history.append("idle")
 		self.brain.addState(self.Idle, "idle", 1, 1)
 		self.brain.addState(self.Bomb, "bomb", 3, 1.5)
 		self.brain.addState(self.Shields, "shields", 2, 2)
-		self.brain.addState(self.SmartShot, "smartshot", 7, 7/3)
+		self.brain.addState(self.SmartShot, "smartshot", 3, 0.2)
 		self.brain.addState(self.machinegunShot, "machinegunshot", 3, 0.1)
 		self.brain.decision = Galleon.decision
 
@@ -565,11 +578,51 @@ class Galleon(Enemy):
 		self.alive = True
 
 
+	def healthBar(self):
+		#Grab values
+		maxhealth = 6
+		currenthealth = self.player.health
+
+		#grab size data
+		width, height = (100,60)
+
+		#calculate %
+		healthpart = currenthealth/maxhealth
+
+
+		#apply % to size
+		if healthpart < 0:
+			healthpart = 0
+		width = width*healthpart
+
+		#change visual
+		self.healthbar.width = width
+
+
 	def decision(body, history):
-		if history[-1] == "shields":
-			return "idle"
+
+		if body.health > 3:
+			if history[-1] == "idle" and history[-2] == "machinegunshot":
+				return "shields"
+			elif history[-1] == "idle" and history[-2] == "shields":
+				return "machinegunshot"
+
+			else:
+				return "idle"
+
 		else:
-			return "shields"
+			if history[-1] == "smartshot":
+				return "bomb"
+			elif history[-1] == "bomb":
+				return "smartshot"
+
+			else:
+				return "smartshot"
+
+
+
+
+
 
 	def Idle(_, dt, body):
 		body.hitcool = False
@@ -589,7 +642,15 @@ class Galleon(Enemy):
 		body.hitcool = True
 
 	def SmartShot(_, dt, body):
-		pass
+		def sineShot(time):
+			dx = 30
+			dy = math.sin(time*4) * 25
+
+			return dx, dy
+
+		
+		ProgrammableProjectileFire(me = body, other = body.player.pos, equation = sineShot, rotation = math.degrees(math.atan2(body.player.pos[1] - body.pos[1], body.player.pos[0] - body.pos[0])), output = body.objects)
+		ProgrammableProjectileFire(me = body, other = body.player.pos, equation = sineShot, rotation = math.degrees(math.atan2(body.player.pos[1] - body.pos[1], body.player.pos[0] - body.pos[0])), output = body.objects, offset = math.pi/4)
 
 	def machinegunShot(_, dt, body):
 		ShootHarpoon(me = body, other = body.player.pos, output = body.objects)
@@ -598,6 +659,7 @@ class Galleon(Enemy):
 
 	def update(self, dt):
 		print(self.health)
+		self.healthBar()
 		self.brain.switch()
 
 		x, y = self.pos
@@ -611,11 +673,15 @@ class Galleon(Enemy):
 
 
 		self.updatevisual(sprite = self.sprite)
+		self.sprite.anchor_x = (self.sprite.width/2)
+		self.sprite.anchor_y = (self.sprite.height/2)
 
 		if self.health <= 0:
 			self.alive = False
 			self.brain.resetSwitch(None)
+			del self.healthbar
 			del self.brain
+
 
 
 

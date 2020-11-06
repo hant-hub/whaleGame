@@ -64,6 +64,8 @@ class Harpoon(EnemyProjectile):
 		y += dy * self.speed
 
 		self.updatevisual(sprite = self.sprite)
+		self.sprite.anchor_x = (self.sprite.width/2)
+		self.sprite.anchor_y = (self.sprite.height/2)
 
 
 		self.pos = (x,y)
@@ -89,7 +91,7 @@ class Harpoon(EnemyProjectile):
 
 class ProgrammableProjectile(EnemyProjectile):
 
-	def __init__(self, pos, size, speed, equation, rotation, side, camera, batch, group):
+	def __init__(self, pos, size, speed, equation, rotation, offset, side, camera, batch, group):
 		super().__init__(pos,size, shapes.Rectangle(*pos, *size, color=(255, 255, 255), batch=batch, group=group))
 
 		self.sprite.anchor_x = (self.sprite.width/2)
@@ -99,7 +101,7 @@ class ProgrammableProjectile(EnemyProjectile):
 
 		
 		
-		self.start = time.perf_counter()
+		self.start = time.perf_counter() - offset
 
 		self.speed = speed
 		#this equation describes the velocity curve ie: is a function that outputs velocity (should be a derivative)
@@ -138,6 +140,8 @@ class ProgrammableProjectile(EnemyProjectile):
 		y += dy * self.speed * dt
 
 		self.updatevisual(sprite = self.sprite, rotation = math.degrees( -math.atan2(0,1)  ))
+		self.sprite.anchor_x = (self.sprite.width/2)
+		self.sprite.anchor_y = (self.sprite.height/2)
 
 
 		self.pos = (x,y)
@@ -206,6 +210,8 @@ class Bomb(EnemyProjectile):
 		y += dy * self.speed
 
 		self.updatevisual(sprite = self.sprite)
+		self.sprite.anchor_x = (self.sprite.width/2)
+		self.sprite.anchor_y = (self.sprite.height/2)
 
 
 		self.pos = (x,y)
@@ -237,10 +243,52 @@ class Bomb(EnemyProjectile):
 
 
 
+class Laser(EnemyProjectile):
+
+	def __init__(self, pos, width, target, camera, batch, group):
+		super().__init__(pos, (10_000,width), shapes.Rectangle(*pos, *(10_000,width), color=(255, 0, 0), batch=batch, group=group))
+		
+		tx, ty = target
+		x, y = pos
+		dx, dy = (tx-x), (ty-y)
+
+		self.sprite.anchor_x = 0
+		self.sprite.anchor_y = self.sprite.height/2
+		self.sprite.rotation = math.degrees( -math.atan2(dy, dx)  )
+
+		
+		self.batch = batch
+		self.group = group
+			
+		self.damage = 15
+
+		self.camera = camera
+
+		#death flag
+		self.alive = True
+
+		self.updatevisual(sprite = self.sprite)
+		#clock.schedule_once(self.kill, 2.5)
+
+	def update(self, dt):	
+		self.updatevisual(sprite = self.sprite)
+		self.sprite.anchor_x = 0
+		self.sprite.anchor_y = self.sprite.height/2
+
+	def hit(self, obj, dt):
+		pass
+
+	def kill(self, dt):
+			self.alive = False
+
+		
 
 
-def ProgrammableProjectileFire(me, other, equation, rotation, output):
-	output.add(ProgrammableProjectile(pos = me.pos, size = (30,30), speed = 15, equation = equation, rotation = rotation, side = type(me), camera = me.camera, batch = me.batch, group = me.group))
+
+
+
+def ProgrammableProjectileFire(me, other, equation, rotation, output, offset = 0):
+	output.add(ProgrammableProjectile(pos = me.pos, size = (30,30), speed = 15, equation = equation, rotation = rotation, offset = offset, side = type(me), camera = me.camera, batch = me.batch, group = me.group))
 
 
 def ShootBomb(me, other, fragNum, output):

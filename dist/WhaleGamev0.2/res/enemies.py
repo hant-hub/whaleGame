@@ -465,7 +465,7 @@ class Frigate(Enemy):
 		dist = math.dist(self.pos, self.player.pos)
 
 		if dist < 1600:
-			ShootBomb(me = self, other = self.player.pos, fragNum = 4, output = self.objects)
+			ShootBomb(me = self, other = self.player.pos, fragNum = 16, output = self.objects)
 
 	def setupFire(self, dt):
 		clock.schedule_interval(self.fire, 5)
