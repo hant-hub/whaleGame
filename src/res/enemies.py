@@ -6,7 +6,7 @@ from pyglet import *
 import math
 from res.util import visibleEntity, getClosestPointCircle
 from random import randint, random
-from res.Projectiles import ShootHarpoon, EnemyProjectile, ProgrammableProjectileFire, ShootBomb
+from res.Projectiles import ShootHarpoon, EnemyProjectile, ProgrammableProjectileFire, ShootBomb, Laser
 from res.arena import Planet
 from res import BossAI
 
@@ -88,6 +88,108 @@ class Enemy(visibleEntity):
 		return (x,y, dx,dy)
 
 
+	def SniperMovement(self, pos, vel, speed, turnspeed, target, dt, rangeSize, radius = 1500):
+
+		tdist = math.dist(pos, target)
+		lradius = radius - rangeSize
+		uradius = radius + rangeSize
+
+		print(target, radius, pos)
+
+		tx, ty = getClosestPointCircle(center = target, radius = radius, point = pos)
+
+		x, y = pos
+		dx, dy = vel
+
+		if(tdist > uradius) or (tdist < lradius):
+			tdx = (tx - x)
+			tdy = (ty - y)
+
+			dx += (tdx - dx) * turnspeed
+			dy += (tdy - dy) * turnspeed
+
+		else:
+			dx /= 2
+			dy /= 2
+
+			if dx < 3:
+				dx = 0
+
+			if dy < 3:
+				dy = 0
+
+		x += dx * dt * speed
+		y += dy * dt * speed
+
+
+		return (x,y, dx,dy)
+
+
+	def speed_limit(self):
+		"""Prevents Enemy from moving too fast"""
+		dx, dy = self.vel
+		speed = math.hypot(*self.vel)
+
+		if speed > 100:
+			dx /= speed
+			dy /= speed
+
+			dx *= 100
+			dy *= 100
+
+		self.vel = (dx,dy)
+
+
+
+	def avoid_wall(self):
+		x, y = self.pos
+		mx, my = self.mapsize
+		dx, dy = self.vel
+
+
+		if x <= 0:
+			dx += 10
+
+		elif x >= mx:
+			dx -= 10
+
+		if y <= 0:
+			dy += 10
+
+		elif y >= my:
+			dy -= 10
+
+		self.vel = (dx,dy)
+
+	def avoid_other(self):
+		"""Prevents enemies from overlapping
+		
+		Code borrowed from Boid algorithm. It creates a repulsive force between enemies
+		so they spread out and aren't clumped together.
+		"""
+		forcex = 0
+		forcey = 0
+		sx, sy = self.pos
+		
+
+		for obj in [obj for obj in self.objects if isinstance(obj, FishingBoat)]:
+
+			if math.dist(self.pos, obj.pos) < 100:
+				
+				bx, by = obj.pos
+
+
+				forcex += sx - bx
+				forcey += sy - by
+		
+		dx, dy = self.vel
+
+
+		dx += forcex * 0.1
+		dy += forcey * 0.1
+
+		self.vel = (dx,dy)
+
 
 
 
@@ -159,60 +261,13 @@ class FishingBoat(Enemy):
 
 
 
-	def speed_limit(self):
-		"""Prevents Enemy from moving too fast"""
-		dx, dy = self.vel
-		speed = math.hypot(*self.vel)
-
-		if speed > 200:
-			dx /= speed
-			dy /= speed
-
-			dx *= 200
-			dy *= 200
-
-		self.vel = (dx,dy)
-
-
-
-	
-
-
-
 	def fire(self, dt, objects):
 		"""calls projectile method to launch attack"""
 		if math.dist(self.pos, self.player.pos) < 400:
 			ShootHarpoon(me = self, other = self.player.pos, output = self.objects)
 
 
-	def avoid_other(self):
-		"""Prevents enemies from overlapping
-		
-		Code borrowed from Boid algorithm. It creates a repulsive force between enemies
-		so they spread out and aren't clumped together.
-		"""
-		forcex = 0
-		forcey = 0
-		sx, sy = self.pos
-		
-
-		for obj in [obj for obj in self.objects if isinstance(obj, FishingBoat)]:
-
-			if math.dist(self.pos, obj.pos) < 100:
-				
-				bx, by = obj.pos
-
-
-				forcex += sx - bx
-				forcey += sy - by
-		
-		dx, dy = self.vel
-
-
-		dx += forcex * 0.1
-		dy += forcey * 0.1
-
-		self.vel = (dx,dy)
+	
 
 
 	def hit(self, obj, dt):
@@ -297,8 +352,8 @@ class Galley(Enemy):
 		dist = math.dist(self.pos, self.player.pos)
 
 		if dist < 1400:
-			for x in range(8):
-				ProgrammableProjectileFire(me = self, other = self.player, equation = Galley.spiral, rotation = x*(360/8), output = self.objects)
+			for x in range(6):
+				ProgrammableProjectileFire(me = self, other = self.player, equation = Galley.spiral, rotation = x*(360/6), output = self.objects)
 
 
 
@@ -335,48 +390,7 @@ class Galley(Enemy):
 		self.vel = (dx,dy)
 
 
-	def speed_limit(self):
-		"""Prevents Enemy from moving too fast"""
-		dx, dy = self.vel
-		speed = math.hypot(*self.vel)
 
-		if speed > 100:
-			dx /= speed
-			dy /= speed
-
-			dx *= 100
-			dy *= 100
-
-		self.vel = (dx,dy)
-
-	def avoid_other(self):
-		"""Prevents enemies from overlapping
-		
-		Code borrowed from Boid algorithm. It creates a repulsive force between enemies
-		so they spread out and aren't clumped together.
-		"""
-		forcex = 0
-		forcey = 0
-		sx, sy = self.pos
-		
-
-		for obj in [obj for obj in self.objects if isinstance(obj, Galley)]:
-
-			if math.dist(self.pos, obj.pos) < 100:
-				
-				bx, by = obj.pos
-
-
-				forcex += sx - bx
-				forcey += sy - by
-		
-		dx, dy = self.vel
-
-
-		dx += forcex * 0.5
-		dy += forcey * 0.5
-
-		self.vel = (dx,dy)
 
 	def hitflip(self, dt):
 		self.hitcool = False
@@ -471,7 +485,7 @@ class Frigate(Enemy):
 		dist = math.dist(self.pos, self.player.pos)
 
 		if dist < 1600:
-			ShootBomb(me = self, other = self.player.pos, fragNum = 16, output = self.objects)
+			ShootBomb(me = self, other = self.player.pos, fragNum = 8, output = self.objects)
 
 	def setupFire(self, dt):
 		clock.schedule_interval(self.fire, 5)
@@ -490,55 +504,14 @@ class Frigate(Enemy):
 			clock.schedule_once(self.hitflip, 1.5)
 
 
-	def speed_limit(self):
-		"""Prevents Enemy from moving too fast"""
-		dx, dy = self.vel
-		speed = math.hypot(*self.vel)
 
-		if speed > 100:
-			dx /= speed
-			dy /= speed
-
-			dx *= 100
-			dy *= 100
-
-		self.vel = (dx,dy)
-
-	def avoid_other(self):
-		"""Prevents enemies from overlapping
-		
-		Code borrowed from Boid algorithm. It creates a repulsive force between enemies
-		so they spread out and aren't clumped together.
-		"""
-		forcex = 0
-		forcey = 0
-		sx, sy = self.pos
-		
-
-		for obj in [obj for obj in self.objects if isinstance(obj, Galley)]:
-
-			if math.dist(self.pos, obj.pos) < 100:
-				
-				bx, by = obj.pos
-
-
-				forcex += sx - bx
-				forcey += sy - by
-		
-		dx, dy = self.vel
-
-
-		dx += forcex * 0.5
-		dy += forcey * 0.5
-
-		self.vel = (dx,dy)
 
 
 
 
 class Whaler(Enemy):
 
-	def __init__(self, pos, speed, player, objects, handler, camera, batch, group):
+	def __init__(self, pos, speed, player, objects, mapsize, handler, camera, batch, group, laserGroup = None):
 		super().__init__(pos,(300,200), shapes.Rectangle(*pos, *(300,200), color=(0, 255, 255), batch=batch, group=group))
 		self.sprite.anchor_x = (self.sprite.width/2)
 		self.sprite.anchor_y = (self.sprite.height/2)
@@ -546,6 +519,10 @@ class Whaler(Enemy):
 
 		self.batch = batch
 		self.group = group
+		if laserGroup == None:
+			self.laserGroup = group
+		else:
+			self.laserGroup = laserGroup
 
 
 		self.vel = (0,0)
@@ -561,15 +538,111 @@ class Whaler(Enemy):
 		self.player = player
 
 		self.objects = objects
+		self.mapsize = mapsize
 
 		self.hitcool = False
+		self.sniperlock = False
+		self.aim = False
+		self.sight = None
+		self.aimpoint = (0,0)
 
 
-		clock.schedule_once(self.setupFire, (random() * 2))
+		#clock.schedule_once(self.setupFire, (random() * 2))
 
 		#death flag
 		self.alive = True
 
+	def laserSight(self):
+		self.aimpoint = self.player.pos
+
+	def lockAimPoint(self, dt):
+		self.aim = False
+
+	def Aiming(self, dt):
+		self.sniperlock = True
+		self.aim = True
+		self.aimpoint = self.player.sprite.position
+
+		x, y = self.sprite.position
+		tx, ty = self.player.sprite.position
+
+		self.sight = shapes.Line(x = tx, y = ty, x2 = x, y2 = y, width=1, color=(255, 0, 0), batch=self.batch, group=self.group)
+
+
+		clock.schedule_once(self.fire, 4)
+		clock.schedule_once(self.lockAimPoint, 3.5)
+
+	def fire(self, dt):
+		self.aim = False
+		self.sight.delete()
+		self.sight = None
+		self.objects.add(Laser(pos = self.pos, width = 100, target = self.aimpoint, camera = self.camera, batch = self.batch, group = self.laserGroup))
+		clock.schedule_once(self.resetFire, 4)
+
+	def resetFire(self,dt):
+		self.aim = False
+		self.sniperlock = False
+
+
+
+	def update(self,dt):
+
+
+		if self.health <= 0:
+			clock.unschedule(self.lockAimPoint)
+			clock.unschedule(self.Aiming)
+			clock.unschedule(self.fire)
+			clock.unschedule(self.resetFire)
+
+			if self.sight != None:
+				self.sight.delete()
+
+			self.alive = False
+
+
+
+		self.avoid_other()
+		self.avoid_wall()
+		self.speed_limit()
+
+		x, y = self.pos
+		dx, dy = self.vel
+		target = self.player.pos
+
+		self.updatevisual(sprite = self.sprite)
+		self.sprite.anchor_x = (self.sprite.width/2)
+		self.sprite.anchor_y = (self.sprite.height/2)
+
+
+		#pathfinding
+		if not self.sniperlock:
+			x,y, dx,dy = self.SniperMovement(pos = self.pos, vel = self.vel, speed = self.speed, turnspeed = self.turnspeed, target = self.player.pos, dt = dt, rangeSize = 500, radius = 1500)
+
+		if ((dx == 0) and (dy == 0)) and (not self.sniperlock):
+			self.Aiming(0)
+
+		#laser Management
+		if self.aim:
+			self.laserSight()
+
+		if self.sight != None:
+
+			self.sight.x = self.sprite.position[0]
+			self.sight.y = self.sprite.position[1]
+
+			self.sight.x2 = ((self.aimpoint[0]-self.camera.target[0]) * self.camera.zoom) + self.camera.pos[0] + (self.camera.target[0]) 
+			self.sight.y2 = ((self.aimpoint[1]-self.camera.target[1]) * self.camera.zoom) + self.camera.pos[1] + (self.camera.target[1])
+
+
+
+
+
+		self.pos = (x,y)
+		self.vel = (dx,dy)
+
+
+	def hitflip(self, dt):
+		self.hitcool = False
 
 
 	def hit(self, obj, dt):
@@ -757,41 +830,7 @@ class Galleon(Enemy):
 		self.hitcool = False
 
 
-	def speed_limit(self):
-		"""Prevents Enemy from moving too fast"""
-		dx, dy = self.vel
-		speed = math.hypot(*self.vel)
 
-		if speed > 100:
-			dx /= speed
-			dy /= speed
-
-			dx *= 100
-			dy *= 100
-
-		self.vel = (dx,dy)
-
-
-
-	def avoid_wall(self):
-		x, y = self.pos
-		mx, my = self.mapsize
-		dx, dy = self.vel
-
-
-		if x <= 0:
-			dx += 10
-
-		elif x >= mx:
-			dx -= 10
-
-		if y <= 0:
-			dy += 10
-
-		elif y >= my:
-			dy -= 10
-
-		self.vel = (dx,dy)
 
 
 

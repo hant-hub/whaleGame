@@ -14,8 +14,9 @@ def main():
 	batch = graphics.Batch()
 	backgrounds = graphics.OrderedGroup(0)
 	backgroundd = graphics.OrderedGroup(1)
-	foreground = graphics.OrderedGroup(2)
-	ui = graphics.OrderedGroup(3)
+	foregroundl = graphics.OrderedGroup(2)
+	foreground = graphics.OrderedGroup(3)
+	ui = graphics.OrderedGroup(4)
 
 
 	#import art
@@ -35,7 +36,7 @@ def main():
 
 
 	#init player
-	player = whalestuff.Player(pos = (0, 0), size = (150, 75), speed = 1, handler = handler, batch = batch, group = foreground)
+	player = whalestuff.Player(pos = (100,100), size = (150, 75), speed = 1, handler = handler, batch = batch, group = foreground)
 	camera = util.Camera(pos = (0,0), zoom = 1, player = player, handler=handler, window = screen)
 	objects.add(player)
 	objects.add(camera)
@@ -61,9 +62,9 @@ def main():
 	#  	objects.add(enemies.FishingBoat(pos = (screen.width/2, screen.height/2 - 100*x), speed = 1, player = player, objects = objects, handler = handler, camera = camera, batch = batch, group = foreground))
 
 	#objects.add(enemies.Frigate(pos = (0,0), speed = 1, player = player, objects = objects, handler = handler, camera = camera, batch = batch, group = foreground))
-	#objects.add(enemies.Galley(pos = (screen.width/2+400, screen.height/2 - 100), speed = 1, player = player, objects = objects, handler = handler, camera = camera, batch = batch, group = foreground))
+	objects.add(enemies.Galley(pos = (screen.width/2+400, screen.height/2 - 100), speed = 1, player = player, objects = objects, handler = handler, camera = camera, batch = batch, group = foreground))
 
-	objects.add(enemies.Galleon(pos = (screen.width/2+400, screen.height/2 - 100), speed = 1, player = player, objects = objects, mapsize = mapsize, screen = screen, handler = handler, camera = camera, batch = batch, group = foreground, ui = ui))
+	#objects.add(enemies.Whaler(pos = (0,0), speed = 1, player = player, objects = objects, mapsize = mapsize, handler = handler, camera = camera, batch = batch, group = foreground, laserGroup = foregroundl))
 
 
 	@screen.event

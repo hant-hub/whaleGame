@@ -268,7 +268,7 @@ class Laser(EnemyProjectile):
 		self.alive = True
 
 		self.updatevisual(sprite = self.sprite)
-		#clock.schedule_once(self.kill, 2.5)
+		clock.schedule_once(self.kill, 2.5)
 
 	def update(self, dt):	
 		self.updatevisual(sprite = self.sprite)
