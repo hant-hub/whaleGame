@@ -47,23 +47,34 @@ def getClosestPointCircle(center, radius, point):
 class Camera:
 	"""holds all camera logic"""
 
-	def __init__(self, pos, zoom, player, window):
+	def __init__(self, pos, zoom, player, handler, window):
 		self.pos = pos
 		self.zoom = zoom
 		self.player = player
+		self.target = (0,0)
+		self.handler = handler
 		self.window = window
 
 	def update(self, dt):
 		px, py = self.player.pos
+		cx, cy = self.handler.target
+
+
+		self.target = (px, py)
 
 		tx, ty = -(px - self.window.width/2),-(py - self.window.height/2)
+
+		dist = math.dist(self.pos, (tx,ty))
+
+	
+
 		x, y = self.pos
 
 		tx -= x
 		ty -= y
 
-		x += tx * dt
-		y += ty * dt
+		x += tx * dt * (2/self.zoom)
+		y += ty * dt * (2/self.zoom)
 
 		self.pos = (x,y)
 
@@ -90,9 +101,19 @@ class visibleEntity:
 
 		x, y = self.pos
 		cx, cy = self.camera.pos
+		tx, ty = self.camera.target
+		width, height = self.size
 
-		sprite.x = x + cx
-		sprite.y = y + cy
+		sprite.x = ((x-tx) * self.camera.zoom) + cx + (tx)
+		sprite.y = ((y-ty) * self.camera.zoom) + cy + (ty)
+
+
+		sprite.width = width * self.camera.zoom
+		sprite.height = height * self.camera.zoom
+
+		# sprite.anchor_x = sprite.anchor_x*self.camera.zoom
+		# sprite.anchor_y = sprite.anchor_y* self.camera.zoom
+
 
 		if rotation != None:
 			sprite.rotation = rotation
@@ -111,6 +132,8 @@ class collision:
 	"""static class for collision functions"""
 
 
+
+
 	def calculateVerticies(sprite):
 		"""converts sprite/rec object into world space vertecies
 
@@ -121,8 +144,10 @@ class collision:
 		rectangle's center
 		"""
 
+
+
 		#grab relavent data
-		rotation = math.radians(sprite.rotation)
+		rotation = math.radians(-sprite.rotation)
 		x, y = sprite.position
 		anchorx, anchory = (sprite.anchor_x, sprite.anchor_y)
 		width, height = (sprite.width, sprite.height)
@@ -147,8 +172,8 @@ class collision:
 			vx, vy = v
 
 
-			vx = vx*math.cos(rotation) - vy*math.sin(rotation)
-			vy = vy*math.cos(rotation) + vx*math.sin(rotation)
+			vx, vy = vx*math.cos(rotation) - vy*math.sin(rotation), vy*math.cos(rotation) + vx*math.sin(rotation)
+
 
 			vx += x
 			vy += y
@@ -160,12 +185,23 @@ class collision:
 
 
 
-	def calculateAxis(verticies):
+	def calculateAxisCircle(center, verticies):
+
+
+
+		point = min(verticies, key=lambda x: math.dist(x,center))
+
+
+		return point
+
+	def calculateAxis(verticies, sprite, verticies2):
 		"""Calculates two vectors to be used as projection axes
 
 		Takes two surface normals of a set of verticies that are
 		perpendicular. (this only works for rectangles) These are then returned in a tuple
 		"""
+
+
 		ur = verticies[0]
 		lr = verticies[1]
 		ll = verticies[2]
@@ -176,10 +212,12 @@ class collision:
 		axis2 = tuple(map((lambda i, j: i-j),  ur, lr))
 
 
-		return (axis1, axis2)
+		return {axis1, axis2}
 
 
-	def ScalerProjection(axis, point):
+
+
+	def ScalerProjection(axis, point, sprite):
 		"""projects a point onto an axis and returns a scalar based on where it landed on the axis
 
 
@@ -191,16 +229,29 @@ class collision:
 		ax, ay = axis
 		px, py = point
 
-		numerator = (px * ax) + (py * ay)
-		denominator = (ax*ax) + (ay*ay)
+		#dist = math.hypot(*axis)
 
-		projectionx = (numerator/denominator) * ax
-		projectiony = (numerator/denominator) * ay
+		#ax /= dist
+		#ay /= dist
 
-
-		output = (projectionx * ax) + (projectiony * ay)
+		output = (px * ax) + (py * ay)
+		
 
 		return output
+
+
+	def ComputeCircleCollision(circle, rec, returnType = bool):
+		point = collision.calculateAxisCircle(center = circle.position, verticies = collision.calculateVerticies(rec))
+
+		if math.dist(point, circle.position) < (circle.radius+100):
+			if returnType == bool:
+				return True
+			else:
+				return point
+
+		return False
+
+
 
 
 	def ComputeCollision(recA, recB):
@@ -211,21 +262,28 @@ class collision:
 		2d collision detection. This function is only for fine grain collision detection
 		as it is rather expensive in computing resources.
 		"""
+		if isinstance(recA, shapes.Circle) and isinstance(recB, shapes.Circle):
+			return False
+		elif isinstance(recA, shapes.Circle):
+			return collision.ComputeCircleCollision(circle = recA, rec = recB, returnType = bool)
+		elif isinstance(recB, shapes.Circle):
+			return collision.ComputeCircleCollision(circle = recB, rec = recA, returnType = bool)
 		
 		
 		axes = set()
 
 		#rec A
 		verticiesA = collision.calculateVerticies(recA)
-		axis1, axis2 = collision.calculateAxis(verticiesA)
-		axes.add(axis1)
-		axes.add(axis2)
+		verticiesB = collision.calculateVerticies(recB)
+
+
+		axisA = collision.calculateAxis(verticiesA, recA, verticiesB)
+		axisB = collision.calculateAxis(verticiesB, recB, verticiesA)
+		axes |= axisA
+		axes |= axisB
 
 		#rec B
-		verticiesB = collision.calculateVerticies(recB)
-		axis1b, axis2b = collision.calculateAxis(verticiesB)
-		axes.add(axis1b)
-		axes.add(axis2b)
+		
 
 
 		for axis in axes:
@@ -233,11 +291,11 @@ class collision:
 			projectionB = set()
 
 			for point in verticiesA:
-				projection = collision.ScalerProjection(axis, point)
+				projection = collision.ScalerProjection(axis, point, recA)
 				projectionA.add(projection)
 
 			for point in verticiesB:
-				projection = collision.ScalerProjection(axis, point)
+				projection = collision.ScalerProjection(axis, point, recB)
 				projectionB.add(projection)
 
 	
@@ -250,6 +308,15 @@ class collision:
 		return True
 
 
+	def calculateRadius(sprite):
+		if isinstance(sprite, shapes.Circle):
+			return sprite.radius
+
+		else:
+			return (math.hypot(sprite.width, sprite.height))
+
+
+
 	def detectCollision(recA, recB):
 		"""General function for collision detection between two rectangles
 
@@ -260,11 +327,11 @@ class collision:
 		This is the only collision function that should be used outside of this class.
 		"""
 
-		widthA, heightA = (recA.width, recA.height)
-		widthB, heightB = (recB.width, recB.height)
 
-		radiusA = math.hypot(widthA, heightA)
-		radiusB = math.hypot(widthB, heightB)
+
+
+		radiusA = collision.calculateRadius(recA)
+		radiusB = collision.calculateRadius(recB)
 
 		ax, ay = recA.position
 		bx, by = recB.position
