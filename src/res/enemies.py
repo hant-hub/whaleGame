@@ -535,8 +535,58 @@ class Frigate(Enemy):
 
 
 
+
+class Whaler(Enemy):
+
+	def __init__(self, pos, speed, player, objects, handler, camera, batch, group):
+		super().__init__(pos,(300,200), shapes.Rectangle(*pos, *(300,200), color=(0, 255, 255), batch=batch, group=group))
+		self.sprite.anchor_x = (self.sprite.width/2)
+		self.sprite.anchor_y = (self.sprite.height/2)
+
+
+		self.batch = batch
+		self.group = group
+
+
+		self.vel = (0,0)
+		
+		self.speed = speed
+		self.handler = handler
+		self.damage = 5
+		self.health = 6
+		self.turnspeed = 0.02
+
+		self.camera = camera
+
+		self.player = player
+
+		self.objects = objects
+
+		self.hitcool = False
+
+
+		clock.schedule_once(self.setupFire, (random() * 2))
+
+		#death flag
+		self.alive = True
+
+
+
+	def hit(self, obj, dt):
+		if self.hitcool:
+			return
+
+		if (type(obj) == type(self.player)) and (obj.ram):
+			self.health -= 1
+			self.hitcool = True
+			clock.schedule_once(self.hitflip, 1.5)
+
+
+
+
+
 class Galleon(Enemy):
-	def __init__(self, pos, speed, player, objects, screen, handler, camera, batch, group, ui):
+	def __init__(self, pos, speed, player, objects, mapsize, screen, handler, camera, batch, group, ui):
 		super().__init__(pos,(700,500), shapes.Rectangle(*pos, *(700,500), color=(0, 255, 255), batch=batch, group=group))
 		self.sprite.anchor_x = (self.sprite.width/2)
 		self.sprite.anchor_y = (self.sprite.height/2)
@@ -548,16 +598,18 @@ class Galleon(Enemy):
 		self.handler = handler
 		self.speed = speed
 		self.player = player
-		self.turnspeed = 0.02
+		self.turnspeed = 0.01
 		self.objects = objects
+		self.mapsize = mapsize
 
-		self.health = 6
+		self.health = 10
 		self.hitcool = False
 
 
 
-		self.healthbar = shapes.Rectangle(*(screen.width/4,30), *(100, 60), color=(255, 0, 0), batch=batch, group=ui)
-		self.healthbar.anchor_x = 200
+		self.healthbar = shapes.Rectangle(x = screen.width/2, y = 30, width = screen.width/2, height = 30, color=(255, 0, 0), batch=batch, group=ui)
+		self.healthbar.anchor_x = screen.width/4
+		self.screen = screen
 
 
 
@@ -580,11 +632,11 @@ class Galleon(Enemy):
 
 	def healthBar(self):
 		#Grab values
-		maxhealth = 6
-		currenthealth = self.player.health
+		maxhealth = 10
+		currenthealth = self.health
 
 		#grab size data
-		width, height = (100,60)
+		width, height = (self.screen.width/2,60)
 
 		#calculate %
 		healthpart = currenthealth/maxhealth
@@ -601,7 +653,7 @@ class Galleon(Enemy):
 
 	def decision(body, history):
 
-		if body.health > 3:
+		if body.health > 5:
 			if history[-1] == "idle" and history[-2] == "machinegunshot":
 				return "shields"
 			elif history[-1] == "idle" and history[-2] == "shields":
@@ -658,15 +710,15 @@ class Galleon(Enemy):
 
 
 	def update(self, dt):
-		print(self.health)
 		self.healthBar()
 		self.brain.switch()
+		self.avoid_wall()
 
 		x, y = self.pos
 		dx, dy = self.vel
 		target = self.player.pos
 
-		x,y, dx,dy = Enemy.DommingMovement(pos = (x,y), vel = (dx,dy), speed = self.speed, turnspeed = self.turnspeed, target = target, dt = dt, radius = 2000)
+		x,y, dx,dy = Enemy.AgresiveMovement(pos = (x,y), vel = (dx,dy), speed = self.speed, turnspeed = self.turnspeed, target = target, dt = dt, radius = 1300)
 
 		self.pos = (x,y)
 		self.vel = (dx,dy)
@@ -683,18 +735,22 @@ class Galleon(Enemy):
 			del self.brain
 
 
-
+	def resetspeed(self, dt = 0):
+		self.speed = 1
 
 
 
 	def hit(self, obj, dt):
+
 		if self.hitcool:
 			return
 
 		if (type(obj) == type(self.player)) and (obj.ram):
 			self.health -= 1
+			self.speed = 3
 			self.hitcool = True
 			clock.schedule_once(self.hitflip, 1.5)
+			clock.schedule_once(self.resetspeed, 1)
 
 
 	def hitflip(self, dt):
@@ -714,3 +770,30 @@ class Galleon(Enemy):
 			dy *= 100
 
 		self.vel = (dx,dy)
+
+
+
+	def avoid_wall(self):
+		x, y = self.pos
+		mx, my = self.mapsize
+		dx, dy = self.vel
+
+
+		if x <= 0:
+			dx += 10
+
+		elif x >= mx:
+			dx -= 10
+
+		if y <= 0:
+			dy += 10
+
+		elif y >= my:
+			dy -= 10
+
+		self.vel = (dx,dy)
+
+
+
+
+

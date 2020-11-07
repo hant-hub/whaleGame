@@ -48,7 +48,6 @@ class AiBrain:
 			stateName = self.decision(self.body, self.history)
 			self.canswitch = False
 			self.history.append(stateName)
-			print(stateName)
 			clock.schedule_interval(self.states[stateName][0], self.states[stateName][2], self.body)
 			clock.schedule_once(self.resetSwitch, self.states[stateName][1])
 		else:

@@ -43,7 +43,8 @@ def main():
 
 
 	#generate Map
-	objects.update(arena.Map(k = 30,r = 1000,bounds = (screen.width*3, screen.height*3), size = 900, camera = camera, batch = batch, group = backgroundd).circles)
+	mapsize = (screen.width*3, screen.height*3)
+	objects.update(arena.Map(k = 30,r = 1000,bounds = mapsize, size = 900, camera = camera, batch = batch, group = backgroundd).circles)
 
 
 	#init GUI
@@ -62,7 +63,7 @@ def main():
 	#objects.add(enemies.Frigate(pos = (0,0), speed = 1, player = player, objects = objects, handler = handler, camera = camera, batch = batch, group = foreground))
 	#objects.add(enemies.Galley(pos = (screen.width/2+400, screen.height/2 - 100), speed = 1, player = player, objects = objects, handler = handler, camera = camera, batch = batch, group = foreground))
 
-	objects.add(enemies.Galleon(pos = (screen.width/2+400, screen.height/2 - 100), speed = 1, player = player, objects = objects, screen = screen, handler = handler, camera = camera, batch = batch, group = foreground, ui = ui))
+	objects.add(enemies.Galleon(pos = (screen.width/2+400, screen.height/2 - 100), speed = 1, player = player, objects = objects, mapsize = mapsize, screen = screen, handler = handler, camera = camera, batch = batch, group = foreground, ui = ui))
 
 
 	@screen.event
