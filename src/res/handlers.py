@@ -58,7 +58,17 @@ class Handler:
 				self.player.sprite.opacity = 255
 
 
-		self.window.push_handlers(on_mouse_drag = on_mouse_motion, on_mouse_motion = on_mouse_motion, on_mouse_press=on_mouse_press, on_mouse_release = on_mouse_release, on_mouse_scroll = on_mouse_scroll)
+		def on_key_press(symbol, modifiers):
+
+			if (symbol == window.key.T) and self.player.tailcool:
+				self.player.TailSlap()
+
+			else:
+				pass
+
+
+
+		self.window.push_handlers(on_mouse_drag = on_mouse_motion, on_mouse_motion = on_mouse_motion, on_mouse_press=on_mouse_press, on_mouse_release = on_mouse_release, on_mouse_scroll = on_mouse_scroll, on_key_press = on_key_press)
 
 
 

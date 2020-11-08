@@ -5,7 +5,7 @@
 
 from pyglet import *
 import math
-from res.util import visibleEntity, getClosestPointCircle, collision
+from res.util import visibleEntity, getClosestPointCircle, collision, Hitbox
 from res.enemies import Enemy
 from res.Projectiles import EnemyProjectile
 from res.arena import Planet
@@ -19,7 +19,7 @@ class Player(visibleEntity):
 	it makes packaging of all the methods and data for the player far more convinient to set up.
 	And should multiplayer ever become feature we have the option of instantiating more instances of player
 	"""
-	def __init__(self, pos, size, speed, handler, batch, group):
+	def __init__(self, pos, size, speed, handler, objects, batch, group):
 		super().__init__(pos,size, shapes.Rectangle(*pos, *size, color=(255, 255, 0), batch=batch, group = group))
 
 
@@ -30,11 +30,15 @@ class Player(visibleEntity):
 		self.sprite.anchor_x = (self.sprite.width/3) * 2
 		self.sprite.anchor_y = (self.sprite.height/2)
 
+		self.batch = batch
+		self.group = group
+
 
 		#setup movment
 		self.vel = (0,0)
 		self.speed = speed
 		self.handler = handler
+		self.objects = objects
 		self.turnspeed = 0.03
 
 		#diving flag
@@ -44,6 +48,7 @@ class Player(visibleEntity):
 		#setup basic attack
 		self.ramcool = True
 		self.ram = False
+		self.tailcool = True
 		self.damage = True
 
 		#health
@@ -226,6 +231,11 @@ class Player(visibleEntity):
 			self.damage = False
 			clock.schedule_once(self.FlipBool, 2, "self.damage")
 
+		elif (isinstance(obj, Hitbox) and self.damage):
+			obj.playerEffect(self)
+			self.damage = False
+			clock.schedule_once(self.FlipBool, 0.5, "self.damage")
+
 
 	def FlipBool(self, dt, value):
 		"""supposed to be general purpose boolean toggle function. Might remove in future"""
@@ -235,16 +245,43 @@ class Player(visibleEntity):
 		elif value == "self.damage":
 			self.damage = not self.damage
 
+		elif value == "self.tailcool":
+			self.tailcool = not self.tailcool
+
 
 
 	def OhFuckOhShitImGonnaDieIWasSoYoungAHHHHHHHHHHH(self):
 		"""Toggles flag to signal to the main program to delete this object"""
 		self.handler.EndHandling()
 		self.alive = False
-		
+	
+	def EnemyTailHit(self, enemy):
+		px, py = self.pos
+		ex, ey = enemy.pos
+
+		ex -= px
+		ey -= py
+
+		dist = math.hypot(ex, ey)
+
+		enemy.vel = (ex * 3, ey * 3)
+
+		enemy.StartStun()
+		clock.schedule_once(enemy.EndStun, 0.5)
+
+
+		if hasattr(enemy, "health"):
+			enemy.health -= 2
+
+		else:
+			enemy.hit(self, 0)
 
 
 
+	def TailSlap(self):
+		self.tailcool = False
+		self.objects.add(Hitbox(pos = self.pos, size = (500, 550), rotation = (-math.degrees(math.atan2(self.vel[1], self.vel[0]))) - 180, sprite = shapes.Rectangle(*self.pos, width = 500, height = 550, color = (0,255,0), batch = self.batch, group = self.group), camera = self.camera, duration = 0.25, enemyEffect = self.EnemyTailHit, playerEffect = (lambda x: None)))
+		clock.schedule_once(self.FlipBool, 3, "self.tailcool")
 
 	class Ram:
 		"""holds all logic for the Ram attack

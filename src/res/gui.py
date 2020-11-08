@@ -20,9 +20,13 @@ class GUI:
 		#create airmeter
 		self.airmeter = shapes.Rectangle(*(window.width-500, window.height - 60), *(400,40), color=(0, 0, 255), batch=batch, group=group)
 
+		#create tailindicator
+		self.tail = shapes.Rectangle(*(30, window.height - 130), *(25,50), color = (0,0,255), batch = batch, group = group)
+
 	def update(self, dt):
 		self.HealthBar()
 		self.AirMeter()
+		self.tailindicator()
 
 
 	def HealthBar(self):
@@ -58,6 +62,17 @@ class GUI:
 		width = maxwidth * airpart
 
 		self.airmeter.width = width
+
+	def tailindicator(self):
+		tail = self.player.tailcool
+
+		if tail:
+			self.tail.opacity = 255
+
+		else:
+			self.tail.opacity = 0
+
+
 
 
 

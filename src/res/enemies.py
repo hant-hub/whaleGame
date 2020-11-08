@@ -4,7 +4,7 @@
 
 from pyglet import *
 import math
-from res.util import visibleEntity, getClosestPointCircle
+from res.util import visibleEntity, getClosestPointCircle, Hitbox
 from random import randint, random
 from res.Projectiles import ShootHarpoon, EnemyProjectile, ProgrammableProjectileFire, ShootBomb, Laser
 from res.arena import Planet
@@ -223,11 +223,19 @@ class FishingBoat(Enemy):
 
 		self.objects = objects
 
+		self.stun = False
+
 
 		clock.schedule_once(self.setupFire, (random() * 2))
 
 		#death flag
 		self.alive = True
+
+	def EndStun(self, dt):
+		self.stun = False
+
+	def StartStun(self):
+		self.stun = True
 
 	def setupFire(self, dt):
 		"""offsets the firing cycle so every enemy isn't in sync with each other"""
@@ -248,8 +256,11 @@ class FishingBoat(Enemy):
 		dx, dy = self.vel
 		target = self.player.pos
 
-		x,y, dx,dy = Enemy.AgresiveMovement(pos = (x,y), vel = (dx,dy), speed = self.speed, turnspeed = self.turnspeed, target = target, dt = dt)
-
+		if not self.stun:
+			x,y, dx,dy = Enemy.AgresiveMovement(pos = (x,y), vel = (dx,dy), speed = self.speed, turnspeed = self.turnspeed, target = target, dt = dt)
+		else:
+			x += dx * dt * self.speed * 10
+			y += dy * dt * self.speed * 10
 		
 
 		self.updatevisual(sprite = self.sprite)
@@ -283,10 +294,15 @@ class FishingBoat(Enemy):
 			self.vel = ((self.vel[0] + (dx*1.05)), (self.vel[1] + (dy*1.05)))
 
 
+		elif (isinstance(obj, Hitbox)):
+			obj.enemyEffect(self)
 
 		elif ( not isinstance(obj, (EnemyProjectile, Enemy) )) and ( not obj.dive):
 			clock.unschedule(self.fire)
+			clock.unschedule(self.setupFire)
 			self.alive = False
+
+
 
 		else:
 			pass
@@ -305,6 +321,7 @@ class Galley(Enemy):
 		super().__init__(pos,(300,200), shapes.Rectangle(*pos, *(300,200), color=(0, 255, 255), batch=batch, group=group))
 		self.sprite.anchor_x = (self.sprite.width/2)
 		self.sprite.anchor_y = (self.sprite.height/2)
+
 
 
 		self.batch = batch
@@ -326,6 +343,7 @@ class Galley(Enemy):
 		self.objects = objects
 
 		self.hitcool = False
+		self.stun = False
 
 
 		clock.schedule_once(self.setupFire, (random() * 2))
@@ -333,7 +351,11 @@ class Galley(Enemy):
 		#death flag
 		self.alive = True
 
+	def EndStun(self, dt):
+		self.stun = False
 
+	def StartStun(self):
+		self.stun = True
 
 	def setupFire(self, dt):
 		clock.schedule_interval(self.fire, 5)
@@ -378,7 +400,12 @@ class Galley(Enemy):
 		dx, dy = self.vel
 		target = self.player.pos
 
-		x,y, dx,dy = Enemy.DommingMovement(pos = (x,y), vel = (dx,dy), speed = self.speed, turnspeed = self.turnspeed, target = target, dt = dt, radius = 1000)
+		if not self.stun:
+			x,y, dx,dy = Enemy.DommingMovement(pos = (x,y), vel = (dx,dy), speed = self.speed, turnspeed = self.turnspeed, target = target, dt = dt, radius = 1000)
+
+		else:
+			x += dx * dt * self.speed * 10
+			y += dy * dt * self.speed * 10
 
 		
 
@@ -400,7 +427,10 @@ class Galley(Enemy):
 		if self.hitcool:
 			return
 
-		if (type(obj) == type(self.player)) and (obj.ram):
+		elif (isinstance(obj, Hitbox)):
+			obj.enemyEffect(self)
+
+		elif (type(obj) == type(self.player)) and (obj.ram):
 			self.health -= 1
 			self.hitcool = True
 			clock.schedule_once(self.hitflip, 1.5)
@@ -436,6 +466,7 @@ class Frigate(Enemy):
 		self.objects = objects
 
 		self.hitcool = False
+		self.stun = False
 
 
 		clock.schedule_once(self.setupFire, (random() * 2))
@@ -443,6 +474,12 @@ class Frigate(Enemy):
 
 		#death flag
 		self.alive = True
+
+	def EndStun(self, dt):
+		self.stun = False
+
+	def StartStun(self):
+		self.stun = True
 
 
 	def update(self, dt):
@@ -465,8 +502,11 @@ class Frigate(Enemy):
 		dx, dy = self.vel
 		target = self.player.pos
 
-		x,y, dx,dy = Enemy.DommingMovement(pos = (x,y), vel = (dx,dy), speed = self.speed, turnspeed = self.turnspeed, target = target, dt = dt, radius = 1300)
-
+		if not self.stun:
+			x,y, dx,dy = Enemy.DommingMovement(pos = (x,y), vel = (dx,dy), speed = self.speed, turnspeed = self.turnspeed, target = target, dt = dt, radius = 1300)
+		else:
+			x += dx * dt * self.speed * 10
+			y += dy * dt * self.speed * 10
 		
 
 		self.updatevisual(sprite = self.sprite)
@@ -498,7 +538,10 @@ class Frigate(Enemy):
 		if self.hitcool:
 			return
 
-		if (type(obj) == type(self.player)) and (obj.ram):
+		elif (isinstance(obj, Hitbox)):
+			obj.enemyEffect(self)
+
+		elif (type(obj) == type(self.player)) and (obj.ram):
 			self.health -= 1
 			self.hitcool = True
 			clock.schedule_once(self.hitflip, 1.5)
@@ -544,6 +587,7 @@ class Whaler(Enemy):
 		self.sniperlock = False
 		self.aim = False
 		self.sight = None
+		self.stun = False
 		self.aimpoint = (0,0)
 
 
@@ -551,6 +595,13 @@ class Whaler(Enemy):
 
 		#death flag
 		self.alive = True
+
+	def EndStun(self, dt):
+		self.stun = False
+
+	def StartStun(self):
+		self.stun = True
+		self.resetFire(0)
 
 	def laserSight(self):
 		self.aimpoint = self.player.pos
@@ -582,6 +633,11 @@ class Whaler(Enemy):
 	def resetFire(self,dt):
 		self.aim = False
 		self.sniperlock = False
+
+		if self.sight != None:
+			self.sight.delete()
+
+
 
 
 
@@ -615,25 +671,29 @@ class Whaler(Enemy):
 
 
 		#pathfinding
-		if not self.sniperlock:
-			x,y, dx,dy = self.SniperMovement(pos = self.pos, vel = self.vel, speed = self.speed, turnspeed = self.turnspeed, target = self.player.pos, dt = dt, rangeSize = 500, radius = 1500)
+		if not self.stun:
 
-		if ((dx == 0) and (dy == 0)) and (not self.sniperlock):
-			self.Aiming(0)
+			if not self.sniperlock:
+				x,y, dx,dy = self.SniperMovement(pos = self.pos, vel = self.vel, speed = self.speed, turnspeed = self.turnspeed, target = self.player.pos, dt = dt, rangeSize = 500, radius = 1500)
 
-		#laser Management
-		if self.aim:
-			self.laserSight()
+			if ((dx == 0) and (dy == 0)) and (not self.sniperlock):
+				self.Aiming(0)
 
-		if self.sight != None:
+			#laser Management
+			if self.aim:
+				self.laserSight()
 
-			self.sight.x = self.sprite.position[0]
-			self.sight.y = self.sprite.position[1]
+			if self.sight != None:
 
-			self.sight.x2 = ((self.aimpoint[0]-self.camera.target[0]) * self.camera.zoom) + self.camera.pos[0] + (self.camera.target[0]) 
-			self.sight.y2 = ((self.aimpoint[1]-self.camera.target[1]) * self.camera.zoom) + self.camera.pos[1] + (self.camera.target[1])
+				self.sight.x = self.sprite.position[0]
+				self.sight.y = self.sprite.position[1]
 
+				self.sight.x2 = ((self.aimpoint[0]-self.camera.target[0]) * self.camera.zoom) + self.camera.pos[0] + (self.camera.target[0]) 
+				self.sight.y2 = ((self.aimpoint[1]-self.camera.target[1]) * self.camera.zoom) + self.camera.pos[1] + (self.camera.target[1])
 
+		else:
+			x += dx * dt * self.speed * 10
+			y += dy * dt * self.speed * 10
 
 
 
@@ -649,7 +709,10 @@ class Whaler(Enemy):
 		if self.hitcool:
 			return
 
-		if (type(obj) == type(self.player)) and (obj.ram):
+		elif (isinstance(obj, Hitbox)):
+			obj.enemyEffect(self)
+
+		elif (type(obj) == type(self.player)) and (obj.ram):
 			self.health -= 1
 			self.hitcool = True
 			clock.schedule_once(self.hitflip, 1.5)
@@ -702,6 +765,8 @@ class Galleon(Enemy):
 
 		self.alive = True
 
+	def StartStun(self):
+		pass
 
 	def healthBar(self):
 		#Grab values
@@ -818,7 +883,10 @@ class Galleon(Enemy):
 		if self.hitcool:
 			return
 
-		if (type(obj) == type(self.player)) and (obj.ram):
+		elif (isinstance(obj, Hitbox)):
+			obj.enemyEffect(self)
+
+		elif (type(obj) == type(self.player)) and (obj.ram):
 			self.health -= 1
 			self.speed = 3
 			self.hitcool = True

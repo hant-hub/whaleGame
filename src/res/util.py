@@ -80,6 +80,15 @@ class Camera:
 
 
 
+
+
+
+
+
+
+
+
+
 class visibleEntity:
 	"""class for all objects that need to be rendered in the game world.
 
@@ -126,6 +135,33 @@ class visibleEntity:
 
 
 
+
+class Hitbox(visibleEntity):
+
+	def __init__(self, pos, size, rotation, sprite, camera, duration, enemyEffect, playerEffect):
+		super().__init__(pos = pos,size = size, sprite = sprite)
+		self.camera = camera
+		self.sprite.anchor_y = self.sprite.height/2
+		self.rotation = rotation
+		self.enemyEffect = enemyEffect
+		self.playerEffect = playerEffect
+		self.alive = True
+
+		self.sprite.rotation = rotation
+
+		clock.schedule_once(self.kill, duration)
+
+	def update(self, dt):
+		self.updatevisual(sprite=self.sprite, rotation = self.rotation)
+		self.sprite.anchor_x = 0
+		self.sprite.anchor_y = self.sprite.height/2
+
+	def kill(self, dt):
+		self.alive = False
+
+
+	def hit(self, *args):
+		pass
 
 
 class collision:

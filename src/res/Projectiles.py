@@ -279,7 +279,7 @@ class Laser(EnemyProjectile):
 		pass
 
 	def kill(self, dt):
-			self.alive = False
+		self.alive = False
 
 		
 
