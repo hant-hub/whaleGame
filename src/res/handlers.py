@@ -63,6 +63,9 @@ class Handler:
 			if (symbol == window.key.T) and self.player.tailcool:
 				self.player.TailSlap()
 
+			elif (symbol == window.key.F) and self.player.lasercool:
+				print(self.player.lasercool)
+				self.player.startLaser()
 			else:
 				pass
 

@@ -7,7 +7,7 @@ from pyglet import *
 import math
 from res.util import visibleEntity, getClosestPointCircle, collision, Hitbox
 from res.enemies import Enemy
-from res.Projectiles import EnemyProjectile
+from res.Projectiles import EnemyProjectile, PlayerLaser
 from res.arena import Planet
 
 
@@ -49,6 +49,7 @@ class Player(visibleEntity):
 		self.ramcool = True
 		self.ram = False
 		self.tailcool = True
+		self.lasercool = True
 		self.damage = True
 
 		#health
@@ -58,6 +59,9 @@ class Player(visibleEntity):
 		#death flag
 		self.alive = True
 
+		#laser stuff
+		self.laserLock = False
+		self.laser = None
 
 
 	def update(self, dt):
@@ -102,6 +106,11 @@ class Player(visibleEntity):
 
 		if self.ram == True:
 			x, y, dx, dy = self.Ram.ram(pos = (x, y), vel = (dx, dy), speed = self.speed, dt = dt)
+		elif self.laserLock == True:
+			dx += ((tx - x) - dx) * self.turnspeed * self.speed
+			dy += ((ty - y) - dy) * self.turnspeed * self.speed
+
+			self.laser.sprite.rotation = math.degrees(-math.atan2(dy, dx))
 
 		else:
 			x, y, dx, dy = self.basicmovement(pos = self.pos, vel = self.vel, target = (tx,ty), dt = dt)
@@ -111,9 +120,9 @@ class Player(visibleEntity):
 
 		#apply rotation
 
-		rotation = math.degrees(math.atan2(dy, dx))
+		rotation = -math.degrees(math.atan2(dy, dx))
 
-		self.updatevisual(sprite = self.sprite, rotation = -rotation)
+		self.updatevisual(sprite = self.sprite, rotation = rotation)
 		self.sprite.anchor_x = (self.sprite.width/3) * 2
 		self.sprite.anchor_y = (self.sprite.height/2)
 
@@ -248,6 +257,9 @@ class Player(visibleEntity):
 		elif value == "self.tailcool":
 			self.tailcool = not self.tailcool
 
+		elif value == "self.lasercool":
+			self.lasercool = not self.lasercool
+
 
 
 	def OhFuckOhShitImGonnaDieIWasSoYoungAHHHHHHHHHHH(self):
@@ -272,6 +284,8 @@ class Player(visibleEntity):
 
 		if hasattr(enemy, "health"):
 			enemy.health -= 2
+			enemy.hitcool = True
+			clock.schedule_once(enemy.hitflip, 1.5)
 
 		else:
 			enemy.hit(self, 0)
@@ -282,6 +296,41 @@ class Player(visibleEntity):
 		self.tailcool = False
 		self.objects.add(Hitbox(pos = self.pos, size = (500, 550), rotation = (-math.degrees(math.atan2(self.vel[1], self.vel[0]))) - 180, sprite = shapes.Rectangle(*self.pos, width = 500, height = 550, color = (0,255,0), batch = self.batch, group = self.group), camera = self.camera, duration = 0.25, enemyEffect = self.EnemyTailHit, playerEffect = (lambda x: None)))
 		clock.schedule_once(self.FlipBool, 3, "self.tailcool")
+
+	def startLaser(self):
+		self.lasercool = False
+		Player.LaserStrike.Start(self)
+		clock.schedule_once(self.FlipBool, 5, "self.lasercool")
+
+		print(self.lasercool)
+		print("startLaser")
+
+
+
+	class LaserStrike:
+
+		def Start(parent):
+			dx, dy = parent.vel
+
+			parent.laserLock = True
+			parent.ramcool = False
+			parent.laser = PlayerLaser(pos = parent.pos, width = 50, target = (dx,dy), camera = parent.camera, batch = parent.batch, group = parent.group, duration = 1.5)
+			parent.laser.sprite.rotation = -math.degrees(math.atan2(dy, dx))
+			parent.objects.add(parent.laser)
+
+			clock.schedule_once(Player.LaserStrike.End, 1.5, parent)
+
+
+		def End(dt, parent):
+
+			parent.laserLock = False
+			parent.ramcool = True
+			parent.laser = None
+
+
+
+
+
 
 	class Ram:
 		"""holds all logic for the Ram attack

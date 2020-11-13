@@ -6,7 +6,7 @@ from pyglet import *
 import math
 from res.util import visibleEntity, getClosestPointCircle, Hitbox
 from random import randint, random
-from res.Projectiles import ShootHarpoon, EnemyProjectile, ProgrammableProjectileFire, ShootBomb, Laser
+from res.Projectiles import ShootHarpoon, EnemyProjectile, ProgrammableProjectileFire, ShootBomb, Laser, PlayerProjectile
 from res.arena import Planet
 from res import BossAI
 
@@ -297,6 +297,11 @@ class FishingBoat(Enemy):
 		elif (isinstance(obj, Hitbox)):
 			obj.enemyEffect(self)
 
+		elif isinstance(obj, PlayerProjectile):
+			clock.unschedule(self.fire)
+			clock.unschedule(self.setupFire)
+			self.alive = False
+
 		elif ( not isinstance(obj, (EnemyProjectile, Enemy) )) and ( not obj.dive):
 			clock.unschedule(self.fire)
 			clock.unschedule(self.setupFire)
@@ -430,6 +435,11 @@ class Galley(Enemy):
 		elif (isinstance(obj, Hitbox)):
 			obj.enemyEffect(self)
 
+		elif (isinstance(obj, PlayerProjectile)):
+			self.health -= obj.damage
+			self.hitcool = True
+			clock.schedule_once(self.hitflip, 1.5)
+
 		elif (type(obj) == type(self.player)) and (obj.ram):
 			self.health -= 1
 			self.hitcool = True
@@ -485,7 +495,7 @@ class Frigate(Enemy):
 	def update(self, dt):
 		"""Updates pos and velocity of enemy"""
 
-		if self.health == 0:
+		if self.health <= 0:
 			self.alive = False
 			clock.unschedule(self.fire)
 			clock.unschedule(self.fire)
@@ -540,6 +550,15 @@ class Frigate(Enemy):
 
 		elif (isinstance(obj, Hitbox)):
 			obj.enemyEffect(self)
+
+
+		elif (isinstance(obj, PlayerProjectile)):
+			self.health -= obj.damage
+			self.hitcool = True
+			clock.schedule_once(self.hitflip, 1.5)
+
+
+
 
 		elif (type(obj) == type(self.player)) and (obj.ram):
 			self.health -= 1
@@ -712,6 +731,13 @@ class Whaler(Enemy):
 		elif (isinstance(obj, Hitbox)):
 			obj.enemyEffect(self)
 
+
+		elif (isinstance(obj, PlayerProjectile)):
+			self.health -= obj.damage
+			self.hitcool = True
+			clock.schedule_once(self.hitflip, 1.5)
+
+
 		elif (type(obj) == type(self.player)) and (obj.ram):
 			self.health -= 1
 			self.hitcool = True
@@ -766,6 +792,8 @@ class Galleon(Enemy):
 		self.alive = True
 
 	def StartStun(self):
+		pass
+	def EndStun(self, *args, **kwargs):
 		pass
 
 	def healthBar(self):
@@ -885,6 +913,15 @@ class Galleon(Enemy):
 
 		elif (isinstance(obj, Hitbox)):
 			obj.enemyEffect(self)
+
+
+
+		elif (isinstance(obj, PlayerProjectile)):
+			self.health -= obj.damage
+			self.hitcool = True
+			self.speed = 3
+			clock.schedule_once(self.hitflip, 1.5)
+			clock.schedule_once(self.resetspeed, 1)
 
 		elif (type(obj) == type(self.player)) and (obj.ram):
 			self.health -= 1

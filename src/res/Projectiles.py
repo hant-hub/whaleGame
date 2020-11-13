@@ -15,6 +15,9 @@ from res.arena import Planet
 class EnemyProjectile(visibleEntity):
 	pass
 
+class PlayerProjectile(visibleEntity):
+	pass
+
 
 class Harpoon(EnemyProjectile):
 	"""Basic projectile for Enemies"""
@@ -245,7 +248,7 @@ class Bomb(EnemyProjectile):
 
 class Laser(EnemyProjectile):
 
-	def __init__(self, pos, width, target, camera, batch, group):
+	def __init__(self, pos, width, target, camera, batch, group, duration = 2.5):
 		super().__init__(pos, (10_000,width), shapes.Rectangle(*pos, *(10_000,width), color=(255, 0, 0), batch=batch, group=group))
 		
 		tx, ty = target
@@ -268,7 +271,7 @@ class Laser(EnemyProjectile):
 		self.alive = True
 
 		self.updatevisual(sprite = self.sprite)
-		clock.schedule_once(self.kill, 2.5)
+		clock.schedule_once(self.kill, duration)
 
 	def update(self, dt):	
 		self.updatevisual(sprite = self.sprite)
@@ -282,6 +285,47 @@ class Laser(EnemyProjectile):
 		self.alive = False
 
 		
+
+
+class PlayerLaser(PlayerProjectile):
+
+	def __init__(self, pos, width, target, camera, batch, group, duration = 2.5):
+		super().__init__(pos, (10_000,width), shapes.Rectangle(*pos, *(10_000,width), color=(255, 0, 0), batch=batch, group=group))
+		
+		tx, ty = target
+		x, y = pos
+		dx, dy = (tx-x), (ty-y)
+
+		self.sprite.anchor_x = 0
+		self.sprite.anchor_y = self.sprite.height/2
+		self.sprite.rotation = math.degrees( -math.atan2(dy, dx)  )
+
+		
+		self.batch = batch
+		self.group = group
+			
+		self.damage = 3
+
+		self.camera = camera
+
+		#death flag
+		self.alive = True
+
+		self.updatevisual(sprite = self.sprite)
+		clock.schedule_once(self.kill, duration)
+
+	def update(self, dt):	
+		self.updatevisual(sprite = self.sprite)
+		self.sprite.anchor_x = 0
+		self.sprite.anchor_y = self.sprite.height/2
+
+	def hit(self, obj, dt):
+		pass
+
+	def kill(self, dt):
+		self.alive = False
+
+
 
 
 

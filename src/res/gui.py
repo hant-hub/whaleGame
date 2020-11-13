@@ -23,10 +23,14 @@ class GUI:
 		#create tailindicator
 		self.tail = shapes.Rectangle(*(30, window.height - 130), *(25,50), color = (0,0,255), batch = batch, group = group)
 
+		#create LaserIndicator
+		self.laser = shapes.Rectangle(*(70, window.height - 130), *(25,50), color = (255,0,0), batch = batch, group = group)
+
 	def update(self, dt):
 		self.HealthBar()
 		self.AirMeter()
 		self.tailindicator()
+		self.LaserIndicator()
 
 
 	def HealthBar(self):
@@ -71,6 +75,16 @@ class GUI:
 
 		else:
 			self.tail.opacity = 0
+
+
+	def LaserIndicator(self):
+		laser = self.player.lasercool
+
+		if laser:
+			self.laser.opacity = 255
+
+		else:
+			self.laser.opacity = 0
 
 
 
