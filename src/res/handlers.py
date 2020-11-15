@@ -2,6 +2,7 @@
 
 
 from pyglet import *
+from res import Menu
 import math
 
 
@@ -15,6 +16,9 @@ class Handler:
 		#init rotation for gameplay
 		self.target = (0,0)	
 		self.player = None
+
+		#buttonstuff
+		self.menu = None
 
 
 	def gamePlayHandler(self, player, camera):
@@ -72,6 +76,20 @@ class Handler:
 
 
 		self.window.push_handlers(on_mouse_drag = on_mouse_motion, on_mouse_motion = on_mouse_motion, on_mouse_press=on_mouse_press, on_mouse_release = on_mouse_release, on_mouse_scroll = on_mouse_scroll, on_key_press = on_key_press)
+
+
+
+	def MenuHandler(self):
+
+		def on_mouse_press(x,y, button, modifiers):
+			if button == window.mouse.LEFT:
+
+				for obj in [obj for obj in self.menu if isinstance(obj, (Menu.MenuButton))]:
+					obj.clicked((x,y))
+
+
+
+		self.window.push_handlers(on_mouse_press = on_mouse_press)
 
 
 

@@ -1,7 +1,9 @@
 from pyglet import *
-from res import whalestuff, util, handlers, gui, enemies, arena, Projectiles
+from res import whalestuff, util, handlers, gui, enemies, arena, Projectiles, Menu
 from itertools import combinations
 import math
+
+
 
 
 
@@ -9,8 +11,21 @@ def main():
 	"""Main functions, entry point of the application"""
 
 
+
+
+
+
+
 	#initialize graphics
 	screen = window.Window(vsync = True, fullscreen=True)
+
+	
+
+	#setup Titlescreen graphics
+	titleBatch = graphics.Batch()
+
+
+	#setup Gameplay Graphics
 	batch = graphics.Batch()
 	backgrounds = graphics.OrderedGroup(0)
 	backgroundd = graphics.OrderedGroup(1)
@@ -19,21 +34,29 @@ def main():
 	ui = graphics.OrderedGroup(4)
 
 
+
 	#import art
+
+	#game
 	resource.path = ['res/images']
 	resource.reindex()
 	Background_image = resource.image("Background/Temp_Stars.jpeg")
 	Background = sprite.Sprite(Background_image, batch = batch, group = backgrounds)
 
+
+	#title
+	#background = shapes.Rectangle(x=0,y=0, width = screen.width, height = screen.height, color = (0,0,0), batch = titleBatch)
+
 	
 	#init objectset
 	objects = set()
 
+	#init Title objectset
+	titleObjects = set()
 
 
 	#create input handler
 	handler = handlers.Handler(window = screen)
-
 
 	#init player
 	player = whalestuff.Player(pos = (100,100), size = (150, 75), speed = 1, handler = handler, objects = objects, batch = batch, group = foreground)
@@ -54,7 +77,14 @@ def main():
 
 	#link objects
 	player.camera = camera
+	handler.menu = titleObjects
 	handler.gamePlayHandler(player = player, camera=camera)
+	handler.EndHandling()
+	handler.MenuHandler()
+
+
+
+	
 
 
 	#create test enemy
@@ -67,18 +97,25 @@ def main():
 	#objects.add(enemies.Whaler(pos = (0,0), speed = 1, player = player, objects = objects, mapsize = mapsize, handler = handler, camera = camera, batch = batch, group = foreground, laserGroup = foregroundl))
 
 
-	@screen.event
-	def on_draw():
+	def GameDraw():
 		"""Where draw call is made"""
 		batch.draw()
+
+	def TitleDraw():
+		titleBatch.draw()
+
+
+	screen.push_handlers(on_draw = TitleDraw)
 
 
 
 	for obj in objects:
 		obj.alive = True
 
+	Menu.createTitleMenu(screen = screen, objectlist = titleObjects, batch = titleBatch)
+
 	#@util.timeit
-	def update(dt):
+	def GameUpdate(dt):
 		"""Updates all objects every frame"""
 		
 		#cx, cy = camera.pos
@@ -122,6 +159,16 @@ def main():
 
 
 		
+	def titleUpdate(dt):
+
+		for obj in titleObjects:
+			print(obj)
+			if obj.activated:
+				print('activated')
+				obj.func(screen = screen, TitleDraw = TitleDraw, TitleUpdate = titleUpdate, Gamedraw = GameDraw, GameUpdate = GameUpdate, handler = handler)
+
+
+
 
 
 
@@ -133,7 +180,7 @@ def main():
 
 
 
-	clock.schedule_interval(update,1/240)
+	clock.schedule_interval(titleUpdate,1/240)
 	app.run()
 
 if __name__ == "__main__":
