@@ -79,8 +79,7 @@ def main():
 	player.camera = camera
 	handler.menu = titleObjects
 	handler.gamePlayHandler(player = player, camera=camera)
-	handler.EndHandling()
-	handler.MenuHandler()
+	
 
 
 
@@ -102,10 +101,11 @@ def main():
 		batch.draw()
 
 	def TitleDraw():
+		screen.clear()
 		titleBatch.draw()
 
 
-	screen.push_handlers(on_draw = TitleDraw)
+
 
 
 
@@ -113,6 +113,7 @@ def main():
 		obj.alive = True
 
 	Menu.createTitleMenu(screen = screen, objectlist = titleObjects, batch = titleBatch)
+
 
 	#@util.timeit
 	def GameUpdate(dt):
@@ -140,6 +141,11 @@ def main():
 				objects.add(sacrifice)
 
 		
+		if handler.titleMenu == True:
+			Menu.StartMenu(screen = screen, handler = handler, TitleDraw = TitleDraw, titleUpdate = titleUpdate, GameUpdate = GameUpdate)
+
+
+
 
 		for corpse in [obj for obj in objects if not obj.alive]:
 			objects.remove(corpse)
@@ -166,11 +172,13 @@ def main():
 			if obj.activated:
 				print('activated')
 				obj.func(screen = screen, TitleDraw = TitleDraw, TitleUpdate = titleUpdate, Gamedraw = GameDraw, GameUpdate = GameUpdate, handler = handler)
+				obj.activated = False
 
 
 
 
 
+	Menu.StartMenu(screen = screen, handler = handler, TitleDraw = TitleDraw, titleUpdate = titleUpdate, GameUpdate = GameUpdate)
 
 
 
@@ -180,7 +188,7 @@ def main():
 
 
 
-	clock.schedule_interval(titleUpdate,1/240)
+	
 	app.run()
 
 if __name__ == "__main__":

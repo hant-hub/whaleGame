@@ -19,6 +19,7 @@ class Handler:
 
 		#buttonstuff
 		self.menu = None
+		self.titleMenu = True
 
 
 	def gamePlayHandler(self, player, camera):
@@ -70,6 +71,10 @@ class Handler:
 			elif (symbol == window.key.F) and self.player.lasercool:
 				print(self.player.lasercool)
 				self.player.startLaser()
+
+			elif (symbol == window.key.TAB):
+				self.titleMenu = True
+
 			else:
 				pass
 

@@ -36,6 +36,7 @@ def StartGame(screen, **kwargs):
 	screen.on_draw = kwargs['Gamedraw']
 	kwargs['handler'].gamePlayHandler(kwargs['handler'].player, kwargs['handler'].camera)
 	clock.schedule_interval(kwargs['GameUpdate'], 1/240)
+	kwargs['handler'].titleMenu = False
 
 
 
@@ -47,3 +48,14 @@ def quitGame(screen, **kwargs):
 def createTitleMenu(screen, objectlist, batch, **kwargs):
 	objectlist.add(MenuButton(pos = (screen.width/2 - 100, screen.height/2 - 50), size = (200,100), sprite = (shapes.Rectangle(*(screen.width/2- 100, screen.height/2- 50), *(200,100), color = (255,255,255), batch = batch)), func = StartGame))
 	objectlist.add(MenuButton(pos = (screen.width/2 - 100, screen.height/2 - 250), size = (200,100), sprite = (shapes.Rectangle(*(screen.width/2 - 100, screen.height/2 - 250), *(200,100), color = (255,255,255), batch = batch)), func = quitGame))
+
+
+def StartMenu(screen, **kwargs):
+	clock.unschedule(kwargs['GameUpdate'])
+
+
+	kwargs['handler'].EndHandling()
+	kwargs['handler'].MenuHandler()
+	screen.on_draw = kwargs['TitleDraw']
+	clock.schedule_interval(kwargs['titleUpdate'], 1/240)
+
