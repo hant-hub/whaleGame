@@ -35,6 +35,8 @@ def main():
 
 
 
+
+
 	#import art
 
 	#game
@@ -47,7 +49,6 @@ def main():
 	#title
 	#background = shapes.Rectangle(x=0,y=0, width = screen.width, height = screen.height, color = (0,0,0), batch = titleBatch)
 
-	
 	#init objectset
 	objects = set()
 
@@ -79,11 +80,6 @@ def main():
 	player.camera = camera
 	handler.menu = titleObjects
 	handler.gamePlayHandler(player = player, camera=camera)
-	
-
-
-
-	
 
 
 	#create test enemy
@@ -96,8 +92,61 @@ def main():
 	#objects.add(enemies.Whaler(pos = (0,0), speed = 1, player = player, objects = objects, mapsize = mapsize, handler = handler, camera = camera, batch = batch, group = foreground, laserGroup = foregroundl))
 
 
+
+
+	def setup():
+		#init objectset
+		for _ in range(len(objects)):
+			thing = objects.pop()
+			if hasattr(thing, "delete"):
+				thing.delete()
+			del thing
+
+
+		#init player
+		player.__init__(pos = (100,100), size = (150, 75), speed = 1, handler = handler, objects = objects, batch = batch, group = foreground)
+		camera.__init__(pos = (0,0), zoom = 1, player = player, handler=handler, window = screen)
+		objects.add(player)
+		objects.add(camera)
+
+
+
+		#generate Map
+		mapsize = (screen.width*3, screen.height*3)
+		objects.update(arena.Map(k = 30,r = 1000,bounds = mapsize, size = 900, camera = camera, batch = batch, group = backgroundd).circles)
+
+
+		#init GUI
+		Gui.__init__(pos = (0,0), player = player, window = screen, batch = batch, group = ui)
+		objects.add(Gui)
+
+		#link objects
+		player.camera = camera
+		handler.menu = titleObjects
+		handler.gamePlayHandler(player = player, camera=camera)
+
+
+		#create test enemy
+		# for x in range(5):
+		# 	objects.add(enemies.FishingBoat(pos = (screen.width/2, screen.height/2 - 100*x), speed = 1, player = player, objects = objects, handler = handler, camera = camera, batch = batch, group = foreground))
+
+		#objects.add(enemies.Frigate(pos = (0,0), speed = 1, player = player, objects = objects, handler = handler, camera = camera, batch = batch, group = foreground))
+		#objects.add(enemies.Galley(pos = (screen.width/2+400, screen.height/2 - 100), speed = 1, player = player, objects = objects, handler = handler, camera = camera, batch = batch, group = foreground))
+		objects.add(enemies.Galleon(pos = (700,700), speed = 0, player = player, objects = objects, mapsize = mapsize, screen = screen, handler = handler, camera = camera, batch = batch, group = foreground, ui = ui))
+		#objects.add(enemies.Whaler(pos = (0,0), speed = 1, player = player, objects = objects, mapsize = mapsize, handler = handler, camera = camera, batch = batch, group = foreground, laserGroup = foregroundl))
+
+		for obj in objects:
+			obj.alive = True
+
+
+	for obj in objects:
+		obj.alive = True
+
+
+
 	def GameDraw():
 		"""Where draw call is made"""
+		screen.clear()
 		batch.draw()
 
 	def TitleDraw():
@@ -105,14 +154,6 @@ def main():
 		titleBatch.draw()
 
 
-
-
-
-
-	for obj in objects:
-		obj.alive = True
-
-	Menu.createTitleMenu(screen = screen, objectlist = titleObjects, batch = titleBatch)
 
 
 	#@util.timeit
@@ -132,6 +173,7 @@ def main():
 		#background.height = screen.height * camera.zoom
 
 
+
 		if len([obj for obj in objects if isinstance(obj, enemies.Enemy) ]) > 40:
 			sacrifice = objects.pop()
 			if isinstance(sacrifice, enemies.Enemy):
@@ -142,9 +184,11 @@ def main():
 
 		
 		if handler.titleMenu == True:
-			Menu.StartMenu(screen = screen, handler = handler, TitleDraw = TitleDraw, titleUpdate = titleUpdate, GameUpdate = GameUpdate)
+			Menu.TitleMenu(screen = screen, handler = handler, TitleDraw = TitleDraw, titleUpdate = titleUpdate, GameUpdate = GameUpdate, objectlist = titleObjects, batch = titleBatch)
+			setup()
 
-
+		if handler.pauseMenu == True:
+			Menu.PauseMenu(screen = screen, handler = handler, TitleDraw = TitleDraw, titleUpdate = titleUpdate, GameUpdate = GameUpdate, objectlist = titleObjects, batch = titleBatch)
 
 
 		for corpse in [obj for obj in objects if not obj.alive]:
@@ -178,7 +222,7 @@ def main():
 
 
 
-	Menu.StartMenu(screen = screen, handler = handler, TitleDraw = TitleDraw, titleUpdate = titleUpdate, GameUpdate = GameUpdate)
+	Menu.TitleMenu(screen = screen, handler = handler, TitleDraw = TitleDraw, titleUpdate = titleUpdate, GameUpdate = GameUpdate, objectlist = titleObjects, batch = titleBatch)
 
 
 

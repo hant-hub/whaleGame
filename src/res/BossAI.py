@@ -58,7 +58,9 @@ class AiBrain:
 		#self.states[stateName](self.body)
 
 
-
+	def kill(self):
+		for func in self.states.values():
+			clock.unschedule(func[0])
 
 
 

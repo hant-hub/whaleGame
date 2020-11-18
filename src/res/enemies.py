@@ -278,7 +278,12 @@ class FishingBoat(Enemy):
 			ShootHarpoon(me = self, other = self.player.pos, output = self.objects)
 
 
-	
+	def delete(self):
+		self.sprite.delete()
+		del self.sprite
+
+		clock.unschedule(self.fire)
+		clock.unschedule(self.setupFire)
 
 
 	def hit(self, obj, dt):
@@ -422,7 +427,11 @@ class Galley(Enemy):
 		self.vel = (dx,dy)
 
 
+	def delete(self):
+		self.sprite.delete()
+		del self.sprite
 
+		clock.unschedule(self.fire)
 
 	def hitflip(self, dt):
 		self.hitcool = False
@@ -541,7 +550,12 @@ class Frigate(Enemy):
 		clock.schedule_interval(self.fire, 5)
 
 
+	def delete(self):
+		self.sprite.delete()
+		del self.sprite
 
+		clock.unschedule(self.fire)
+		clock.unschedule(self.fire)
 
 
 	def hit(self, obj, dt):
@@ -657,9 +671,6 @@ class Whaler(Enemy):
 			self.sight.delete()
 
 
-
-
-
 	def update(self,dt):
 
 
@@ -744,6 +755,17 @@ class Whaler(Enemy):
 			clock.schedule_once(self.hitflip, 1.5)
 
 
+	def delete(self):
+		self.sprite.delete()
+		del self.sprite
+
+		clock.unschedule(self.lockAimPoint)
+		clock.unschedule(self.Aiming)
+		clock.unschedule(self.fire)
+		clock.unschedule(self.resetFire)
+
+		if self.sight != None:
+			self.sight.delete()
 
 
 
@@ -933,6 +955,29 @@ class Galleon(Enemy):
 
 	def hitflip(self, dt):
 		self.hitcool = False
+
+
+
+	def delete(self):
+
+		self.sprite.delete()
+		del self.sprite
+
+		try:
+			self.healthbar.delete()
+			del self.healthbar
+
+		except:
+			pass
+
+		try:
+			self.brain.kill()
+			del self.brain
+
+		except:
+			pass
+			
+
 
 
 

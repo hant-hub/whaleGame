@@ -20,6 +20,7 @@ class Handler:
 		#buttonstuff
 		self.menu = None
 		self.titleMenu = True
+		self.pauseMenu = False
 
 
 	def gamePlayHandler(self, player, camera):
@@ -73,7 +74,7 @@ class Handler:
 				self.player.startLaser()
 
 			elif (symbol == window.key.TAB):
-				self.titleMenu = True
+				self.pauseMenu = True
 
 			else:
 				pass
