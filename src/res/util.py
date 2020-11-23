@@ -3,6 +3,7 @@
 
 from pyglet import *
 import math, time
+from res import whalestuff
 
 
 
@@ -73,8 +74,8 @@ class Camera:
 		tx -= x
 		ty -= y
 
-		x += tx * dt * (2/self.zoom)
-		y += ty * dt * (2/self.zoom)
+		x += tx * dt * (1.25/self.zoom)
+		y += ty * dt * (1.25/self.zoom)
 
 		self.pos = (x,y)
 
@@ -380,8 +381,6 @@ class collision:
 		
 		else:
 			return False
-
-
 
 
 

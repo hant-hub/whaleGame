@@ -8,7 +8,10 @@ from res.util import visibleEntity, getClosestPointCircle, Hitbox
 from random import randint, random
 from res.Projectiles import ShootHarpoon, EnemyProjectile, ProgrammableProjectileFire, ShootBomb, Laser, PlayerProjectile
 from res.arena import Planet
-from res import BossAI
+from res import BossAI, collectibles
+
+
+
 
 
 
@@ -93,8 +96,6 @@ class Enemy(visibleEntity):
 		tdist = math.dist(pos, target)
 		lradius = radius - rangeSize
 		uradius = radius + rangeSize
-
-		print(target, radius, pos)
 
 		tx, ty = getClosestPointCircle(center = target, radius = radius, point = pos)
 
@@ -279,6 +280,7 @@ class FishingBoat(Enemy):
 
 
 	def delete(self):
+		self.objects.add(collectibles.ArmourDrop(pos = self.pos, size = (40,40), camera = self.camera, batch = self.batch, group = self.group))
 		self.sprite.delete()
 		del self.sprite
 
@@ -370,7 +372,7 @@ class Galley(Enemy):
 	def setupFire(self, dt):
 		clock.schedule_interval(self.fire, 5)
 
-	def spiral(time):
+	def spiral(time, args):
 
 		dx = 10*math.cos(time*2)
 		dy = 10*math.sin(time*2)
@@ -384,8 +386,8 @@ class Galley(Enemy):
 		dist = math.dist(self.pos, self.player.pos)
 
 		if dist < 1400:
-			for x in range(6):
-				ProgrammableProjectileFire(me = self, other = self.player, equation = Galley.spiral, rotation = x*(360/6), output = self.objects)
+			for x in range(4):
+				ProgrammableProjectileFire(me = self, other = self.player, equation = Galley.spiral, rotation = x*(360/4), output = self.objects)
 
 
 
@@ -394,7 +396,7 @@ class Galley(Enemy):
 	def update(self, dt):
 		"""Updates pos and velocity of enemy"""
 
-		if self.health == 0:
+		if self.health <= 0:
 			self.alive = False
 			clock.unschedule(self.fire)
 
@@ -428,6 +430,8 @@ class Galley(Enemy):
 
 
 	def delete(self):
+		self.alive = False
+		self.objects.add(collectibles.ArmourDrop(pos = self.pos, size = (40,40), camera = self.camera, batch = self.batch, group = self.group))
 		self.sprite.delete()
 		del self.sprite
 
@@ -450,9 +454,12 @@ class Galley(Enemy):
 			clock.schedule_once(self.hitflip, 1.5)
 
 		elif (type(obj) == type(self.player)) and (obj.ram):
-			self.health -= 1
+			self.health -= obj.meleeDamage
 			self.hitcool = True
 			clock.schedule_once(self.hitflip, 1.5)
+
+		else:
+			pass
 
 
 
@@ -551,6 +558,7 @@ class Frigate(Enemy):
 
 
 	def delete(self):
+		self.objects.add(collectibles.ArmourDrop(pos = self.pos, size = (40,40), camera = self.camera, batch = self.batch, group = self.group))
 		self.sprite.delete()
 		del self.sprite
 
@@ -575,7 +583,7 @@ class Frigate(Enemy):
 
 
 		elif (type(obj) == type(self.player)) and (obj.ram):
-			self.health -= 1
+			self.health -= obj.meleeDamage
 			self.hitcool = True
 			clock.schedule_once(self.hitflip, 1.5)
 
@@ -750,12 +758,13 @@ class Whaler(Enemy):
 
 
 		elif (type(obj) == type(self.player)) and (obj.ram):
-			self.health -= 1
+			self.health -= obj.meleeDamage
 			self.hitcool = True
 			clock.schedule_once(self.hitflip, 1.5)
 
 
 	def delete(self):
+		self.objects.add(collectibles.ArmourDrop(pos = self.pos, size = (40,40), camera = self.camera, batch = self.batch, group = self.group))
 		self.sprite.delete()
 		del self.sprite
 
@@ -882,7 +891,7 @@ class Galleon(Enemy):
 		body.hitcool = True
 
 	def SmartShot(_, dt, body):
-		def sineShot(time):
+		def sineShot(time, args):
 			dx = 30
 			dy = math.sin(time*4) * 25
 
@@ -946,7 +955,7 @@ class Galleon(Enemy):
 			clock.schedule_once(self.resetspeed, 1)
 
 		elif (type(obj) == type(self.player)) and (obj.ram):
-			self.health -= 1
+			self.health -= obj.meleeDamage
 			self.speed = 3
 			self.hitcool = True
 			clock.schedule_once(self.hitflip, 1.5)
@@ -959,6 +968,7 @@ class Galleon(Enemy):
 
 
 	def delete(self):
+		self.objects.add(collectibles.ArmourDrop(pos = self.pos, size = (40,40), camera = self.camera, batch = self.batch, group = self.group))
 
 		self.sprite.delete()
 		del self.sprite

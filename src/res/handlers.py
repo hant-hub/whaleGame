@@ -51,8 +51,7 @@ class Handler:
 				self.player.damage = False
 				self.player.dive = True
 				self.player.sprite.opacity = 128
-
-				clock.unschedule(player.FlipBool)
+				self.ramcool = True
 
 
 
@@ -66,12 +65,14 @@ class Handler:
 
 		def on_key_press(symbol, modifiers):
 
-			if (symbol == window.key.T) and self.player.tailcool:
-				self.player.TailSlap()
+			if (symbol == window.key._1) and self.player.abilityOneCool:
+				self.player.AbilityOne(self.player, "one")
 
-			elif (symbol == window.key.F) and self.player.lasercool:
-				print(self.player.lasercool)
-				self.player.startLaser()
+			elif (symbol == window.key._2) and self.player.abilityTwoCool:
+				self.player.AbilityTwo(self.player, "two")
+
+			elif (symbol == window.key._3) and self.player.abilityThreeCool:
+				self.player.AbilityThree(self.player, "three")
 
 			elif (symbol == window.key.TAB):
 				self.pauseMenu = True

@@ -94,7 +94,7 @@ class Harpoon(EnemyProjectile):
 
 class ProgrammableProjectile(EnemyProjectile):
 
-	def __init__(self, pos, size, speed, equation, rotation, offset, side, camera, batch, group):
+	def __init__(self, pos, size, speed, equation, rotation, offset, side, camera, batch, group, args):
 		super().__init__(pos,size, shapes.Rectangle(*pos, *size, color=(255, 255, 255), batch=batch, group=group))
 
 		self.sprite.anchor_x = (self.sprite.width/2)
@@ -105,6 +105,7 @@ class ProgrammableProjectile(EnemyProjectile):
 		
 		
 		self.start = time.perf_counter() - offset
+		self.args = args
 
 		self.speed = speed
 		#this equation describes the velocity curve ie: is a function that outputs velocity (should be a derivative)
@@ -132,7 +133,7 @@ class ProgrammableProjectile(EnemyProjectile):
 		"""Update method Projctile, fundamentallythe same for all Projectiles"""
 
 		x, y = self.pos
-		dx, dy = self.equation(time.perf_counter() - self.start)
+		dx, dy = self.equation(time.perf_counter() - self.start, self.args)
 
 
 		#rotate dx, dy by rotation
@@ -331,8 +332,8 @@ class PlayerLaser(PlayerProjectile):
 
 
 
-def ProgrammableProjectileFire(me, other, equation, rotation, output, offset = 0):
-	output.add(ProgrammableProjectile(pos = me.pos, size = (30,30), speed = 15, equation = equation, rotation = rotation, offset = offset, side = type(me), camera = me.camera, batch = me.batch, group = me.group))
+def ProgrammableProjectileFire(me, other, equation, rotation, output, offset = 0, args = None):
+	output.add(ProgrammableProjectile(pos = me.pos, size = (30,30), speed = 15, equation = equation, rotation = rotation, offset = offset, side = type(me), camera = me.camera, batch = me.batch, group = me.group, args = args))
 
 
 def ShootBomb(me, other, fragNum, output):

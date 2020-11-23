@@ -9,6 +9,7 @@ from res.util import visibleEntity, getClosestPointCircle, collision, Hitbox
 from res.enemies import Enemy
 from res.Projectiles import EnemyProjectile, PlayerLaser
 from res.arena import Planet
+from res.PlayerAbilities import LaserStrike, TailStrike, WhaleSong
 
 
 
@@ -43,25 +44,39 @@ class Player(visibleEntity):
 
 		#diving flag
 		self.dive = False
+		self.infinityDive = False
 		self.air = 100
 
 		#setup basic attack
 		self.ramcool = True
 		self.ram = False
-		self.tailcool = True
-		self.lasercool = True
+		
 		self.damage = True
+		self.meleeDamage = 1
 
 		#health
 		self.maxhealth = 100
 		self.health = 100
 
+		#armour
+		self.armour = 30
+
 		#death flag
 		self.alive = True
 
-		#laser stuff
-		self.laserLock = False
-		self.laser = None
+		#projectile mode
+		self.moveLock = False
+		self.projectile = None
+
+
+		#abilities
+		self.AbilityOne = TailStrike.TailSlap
+		self.AbilityTwo = LaserStrike.startLaser
+		self.AbilityThree = WhaleSong.Sing
+
+		self.abilityOneCool = True
+		self.abilityTwoCool = True
+		self.abilityThreeCool = True
 
 
 	def update(self, dt):
@@ -73,7 +88,7 @@ class Player(visibleEntity):
 
 		#dive logic
 
-		if self.dive:
+		if self.dive and (not self.infinityDive):
 			self.air -= 0.5
 
 		elif self.air < 100:
@@ -106,11 +121,11 @@ class Player(visibleEntity):
 
 		if self.ram == True:
 			x, y, dx, dy = self.Ram.ram(pos = (x, y), vel = (dx, dy), speed = self.speed, dt = dt)
-		elif self.laserLock == True:
+		elif self.moveLock == True:
 			dx += ((tx - x) - dx) * self.turnspeed * self.speed
 			dy += ((ty - y) - dy) * self.turnspeed * self.speed
 
-			self.laser.sprite.rotation = math.degrees(-math.atan2(dy, dx))
+			self.projectile.sprite.rotation = math.degrees(-math.atan2(dy, dx))
 
 		else:
 			x, y, dx, dy = self.basicmovement(pos = self.pos, vel = self.vel, target = (tx,ty), dt = dt)
@@ -236,9 +251,17 @@ class Player(visibleEntity):
 
 
 		elif (isinstance(obj, EnemyProjectile)) and self.damage:
-			self.health -= obj.damage
+			
+			self.armour -= obj.damage
+
+			if self.armour < 0:
+				self.health += self.armour
+				self.armour = 0
+
 			self.damage = False
 			clock.schedule_once(self.FlipBool, 2, "self.damage")
+
+			print(self.armour, self.health)
 
 		elif (isinstance(obj, Hitbox) and self.damage):
 			obj.playerEffect(self)
@@ -248,17 +271,21 @@ class Player(visibleEntity):
 
 	def FlipBool(self, dt, value):
 		"""supposed to be general purpose boolean toggle function. Might remove in future"""
+
 		if value == "self.ram":
 			self.ram = not self.ram
 
 		elif value == "self.damage":
 			self.damage = not self.damage
 
-		elif value == "self.tailcool":
-			self.tailcool = not self.tailcool
+		elif value == "one":
+			self.abilityOneCool = not self.abilityOneCool
 
-		elif value == "self.lasercool":
-			self.lasercool = not self.lasercool
+		elif value == "two":
+			self.abilityTwoCool = not self.abilityTwoCool
+
+		elif value == "three":
+			self.abilityThreeCool = not self.abilityThreeCool
 
 
 
@@ -267,66 +294,8 @@ class Player(visibleEntity):
 		self.handler.EndHandling()
 		self.alive = False
 	
-	def EnemyTailHit(self, enemy):
-		px, py = self.pos
-		ex, ey = enemy.pos
-
-		ex -= px
-		ey -= py
-
-		dist = math.hypot(ex, ey)
-
-		enemy.vel = (ex * 3, ey * 3)
-
-		enemy.StartStun()
-		clock.schedule_once(enemy.EndStun, 0.5)
-
-
-		if hasattr(enemy, "health"):
-			enemy.health -= 2
-			enemy.hitcool = True
-			clock.schedule_once(enemy.hitflip, 1.5)
-
-		else:
-			enemy.hit(self, 0)
-
-
-
-	def TailSlap(self):
-		self.tailcool = False
-		self.objects.add(Hitbox(pos = self.pos, size = (500, 550), rotation = (-math.degrees(math.atan2(self.vel[1], self.vel[0]))) - 180, sprite = shapes.Rectangle(*self.pos, width = 500, height = 550, color = (0,255,0), batch = self.batch, group = self.group), camera = self.camera, duration = 0.25, enemyEffect = self.EnemyTailHit, playerEffect = (lambda x: None)))
-		clock.schedule_once(self.FlipBool, 3, "self.tailcool")
-
-	def startLaser(self):
-		self.lasercool = False
-		Player.LaserStrike.Start(self)
-		clock.schedule_once(self.FlipBool, 5, "self.lasercool")
-
-		print(self.lasercool)
-		print("startLaser")
-
-
-
-	class LaserStrike:
-
-		def Start(parent):
-			dx, dy = parent.vel
-
-			parent.laserLock = True
-			parent.ramcool = False
-			parent.laser = PlayerLaser(pos = parent.pos, width = 50, target = (dx,dy), camera = parent.camera, batch = parent.batch, group = parent.group, duration = 1.5)
-			parent.laser.sprite.rotation = -math.degrees(math.atan2(dy, dx))
-			parent.objects.add(parent.laser)
-
-			clock.schedule_once(Player.LaserStrike.End, 1.5, parent)
-
-
-		def End(dt, parent):
-
-			parent.laserLock = False
-			parent.ramcool = True
-			parent.laser = None
-
+	
+	
 
 
 
@@ -392,14 +361,15 @@ class Player(visibleEntity):
 			x, y = pos
 			dx, dy = vel
 
-	
-	
+
+
 			#apply movement
 			x += dx * speed * dt * 3
 			y += dy * speed * dt * 3
 
 			return (x,y, dx, dy)
 
+	
 
 
 

@@ -1,5 +1,5 @@
 from pyglet import *
-from res import whalestuff, util, handlers, gui, enemies, arena, Projectiles, Menu
+from res import whalestuff, util, handlers, gui, enemies, arena, Projectiles, Menu, collectibles
 from itertools import combinations
 import math
 
@@ -86,13 +86,13 @@ def main():
 	# for x in range(5):
 	# 	objects.add(enemies.FishingBoat(pos = (screen.width/2, screen.height/2 - 100*x), speed = 1, player = player, objects = objects, handler = handler, camera = camera, batch = batch, group = foreground))
 
-	#objects.add(enemies.Frigate(pos = (0,0), speed = 1, player = player, objects = objects, handler = handler, camera = camera, batch = batch, group = foreground))
-	#objects.add(enemies.Galley(pos = (screen.width/2+400, screen.height/2 - 100), speed = 1, player = player, objects = objects, handler = handler, camera = camera, batch = batch, group = foreground))
-	objects.add(enemies.Galleon(pos = (700,700), speed = 0, player = player, objects = objects, mapsize = mapsize, screen = screen, handler = handler, camera = camera, batch = batch, group = foreground, ui = ui))
-	#objects.add(enemies.Whaler(pos = (0,0), speed = 1, player = player, objects = objects, mapsize = mapsize, handler = handler, camera = camera, batch = batch, group = foreground, laserGroup = foregroundl))
-
-
-
+	# objects.add(enemies.Frigate(pos = (0,0), speed = 1, player = player, objects = objects, handler = handler, camera = camera, batch = batch, group = foreground))
+	# objects.add(enemies.Galley(pos = (screen.width/2+400, screen.height/2 - 100), speed = 1, player = player, objects = objects, handler = handler, camera = camera, batch = batch, group = foreground))
+	# objects.add(enemies.Galleon(pos = (700,700), speed = 0, player = player, objects = objects, mapsize = mapsize, screen = screen, handler = handler, camera = camera, batch = batch, group = foreground, ui = ui))
+	# objects.add(enemies.Whaler(pos = (0,0), speed = 1, player = player, objects = objects, mapsize = mapsize, handler = handler, camera = camera, batch = batch, group = foreground, laserGroup = foregroundl))
+	# objects.add(collectibles.HealthPack(health = 1000, pos = (500,500), size = (50,50), camera = camera, batch = batch, group = foreground))
+	# objects.add(collectibles.DamageBooster(pos = (500,500), size = (75,75), camera = camera, batch=batch, group=foreground))
+	
 
 	def setup():
 		#init objectset
@@ -130,10 +130,11 @@ def main():
 		# for x in range(5):
 		# 	objects.add(enemies.FishingBoat(pos = (screen.width/2, screen.height/2 - 100*x), speed = 1, player = player, objects = objects, handler = handler, camera = camera, batch = batch, group = foreground))
 
-		#objects.add(enemies.Frigate(pos = (0,0), speed = 1, player = player, objects = objects, handler = handler, camera = camera, batch = batch, group = foreground))
-		#objects.add(enemies.Galley(pos = (screen.width/2+400, screen.height/2 - 100), speed = 1, player = player, objects = objects, handler = handler, camera = camera, batch = batch, group = foreground))
-		objects.add(enemies.Galleon(pos = (700,700), speed = 0, player = player, objects = objects, mapsize = mapsize, screen = screen, handler = handler, camera = camera, batch = batch, group = foreground, ui = ui))
-		#objects.add(enemies.Whaler(pos = (0,0), speed = 1, player = player, objects = objects, mapsize = mapsize, handler = handler, camera = camera, batch = batch, group = foreground, laserGroup = foregroundl))
+		# objects.add(enemies.Frigate(pos = (0,0), speed = 1, player = player, objects = objects, handler = handler, camera = camera, batch = batch, group = foreground))
+		# objects.add(enemies.Galley(pos = (screen.width/2+400, screen.height/2 - 100), speed = 1, player = player, objects = objects, handler = handler, camera = camera, batch = batch, group = foreground))
+		# objects.add(enemies.Galleon(pos = (700,700), speed = 0, player = player, objects = objects, mapsize = mapsize, screen = screen, handler = handler, camera = camera, batch = batch, group = foreground, ui = ui))
+		# objects.add(enemies.Whaler(pos = (0,0), speed = 1, player = player, objects = objects, mapsize = mapsize, handler = handler, camera = camera, batch = batch, group = foreground, laserGroup = foregroundl))
+		# objects.add(util.HealthPack(health = 10, pos = (500,500), size = (50,50), camera = camera, batch = batch, group = foreground))
 
 		for obj in objects:
 			obj.alive = True
@@ -203,8 +204,9 @@ def main():
 
 		for obj, obj2 in combinations([obj for obj in objects if isinstance(obj, (util.visibleEntity))], r=2):
 			if util.collision.detectCollision(recA = obj.sprite, recB = obj2.sprite) and (obj != obj2) and (type(obj) != type(obj2)):
-				obj.hit(obj2, dt)
-				obj2.hit(obj, dt)
+				if not (isinstance(obj, (enemies.Enemy, Projectiles.EnemyProjectile)) and isinstance(obj2, (enemies.Enemy, Projectiles.EnemyProjectile))):
+					obj.hit(obj2, dt)
+					obj2.hit(obj, dt)
 
 
 
@@ -212,9 +214,7 @@ def main():
 	def titleUpdate(dt):
 
 		for obj in titleObjects:
-			print(obj)
 			if obj.activated:
-				print('activated')
 				obj.func(screen = screen, TitleDraw = TitleDraw, TitleUpdate = titleUpdate, Gamedraw = GameDraw, GameUpdate = GameUpdate, handler = handler)
 				obj.activated = False
 
