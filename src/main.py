@@ -61,7 +61,7 @@ def main():
 
 	#init player
 	player = whalestuff.Player(pos = (100,100), size = (150, 75), speed = 1, handler = handler, objects = objects, batch = batch, group = foreground)
-	camera = util.Camera(pos = (0,0), zoom = 1, player = player, handler=handler, window = screen)
+	camera = util.Camera(pos = (0,0), zoom = 0.5, player = player, handler=handler, window = screen)
 	objects.add(player)
 	objects.add(camera)
 
@@ -88,10 +88,11 @@ def main():
 
 	# objects.add(enemies.Frigate(pos = (0,0), speed = 1, player = player, objects = objects, handler = handler, camera = camera, batch = batch, group = foreground))
 	# objects.add(enemies.Galley(pos = (screen.width/2+400, screen.height/2 - 100), speed = 1, player = player, objects = objects, handler = handler, camera = camera, batch = batch, group = foreground))
-	# objects.add(enemies.Galleon(pos = (700,700), speed = 0, player = player, objects = objects, mapsize = mapsize, screen = screen, handler = handler, camera = camera, batch = batch, group = foreground, ui = ui))
-	# objects.add(enemies.Whaler(pos = (0,0), speed = 1, player = player, objects = objects, mapsize = mapsize, handler = handler, camera = camera, batch = batch, group = foreground, laserGroup = foregroundl))
+	#objects.add(enemies.Galleon(pos = (700,700), speed = 0, player = player, objects = objects, mapsize = mapsize, screen = screen, handler = handler, camera = camera, batch = batch, group = foreground, ui = ui))
+	#objects.add(enemies.Whaler(pos = (0,0), speed = 1, player = player, objects = objects, mapsize = mapsize, handler = handler, camera = camera, batch = batch, group = foreground, laserGroup = foregroundl))
 	# objects.add(collectibles.HealthPack(health = 1000, pos = (500,500), size = (50,50), camera = camera, batch = batch, group = foreground))
 	# objects.add(collectibles.DamageBooster(pos = (500,500), size = (75,75), camera = camera, batch=batch, group=foreground))
+	objects.add(enemies.Kraken(pos = (0, -450), speed = 1, player = player, objects = objects, mapsize = mapsize, screen = screen, handler = handler, camera = camera, batch = batch, group = foreground, ui = ui))
 	
 
 	def setup():
@@ -105,7 +106,7 @@ def main():
 
 		#init player
 		player.__init__(pos = (100,100), size = (150, 75), speed = 1, handler = handler, objects = objects, batch = batch, group = foreground)
-		camera.__init__(pos = (0,0), zoom = 1, player = player, handler=handler, window = screen)
+		camera.__init__(pos = (0,0), zoom = 0.5, player = player, handler=handler, window = screen)
 		objects.add(player)
 		objects.add(camera)
 
@@ -127,14 +128,14 @@ def main():
 
 
 		#create test enemy
-		# for x in range(5):
-		# 	objects.add(enemies.FishingBoat(pos = (screen.width/2, screen.height/2 - 100*x), speed = 1, player = player, objects = objects, handler = handler, camera = camera, batch = batch, group = foreground))
+		for x in range(5):
+			objects.add(enemies.FishingBoat(pos = (screen.width/2, screen.height/2 - 100*x), speed = 1, player = player, objects = objects, handler = handler, camera = camera, batch = batch, group = foreground))
 
-		# objects.add(enemies.Frigate(pos = (0,0), speed = 1, player = player, objects = objects, handler = handler, camera = camera, batch = batch, group = foreground))
-		# objects.add(enemies.Galley(pos = (screen.width/2+400, screen.height/2 - 100), speed = 1, player = player, objects = objects, handler = handler, camera = camera, batch = batch, group = foreground))
-		# objects.add(enemies.Galleon(pos = (700,700), speed = 0, player = player, objects = objects, mapsize = mapsize, screen = screen, handler = handler, camera = camera, batch = batch, group = foreground, ui = ui))
-		# objects.add(enemies.Whaler(pos = (0,0), speed = 1, player = player, objects = objects, mapsize = mapsize, handler = handler, camera = camera, batch = batch, group = foreground, laserGroup = foregroundl))
-		# objects.add(util.HealthPack(health = 10, pos = (500,500), size = (50,50), camera = camera, batch = batch, group = foreground))
+		objects.add(enemies.Frigate(pos = (0,0), speed = 1, player = player, objects = objects, handler = handler, camera = camera, batch = batch, group = foreground))
+		objects.add(enemies.Galley(pos = (screen.width/2+400, screen.height/2 - 100), speed = 1, player = player, objects = objects, handler = handler, camera = camera, batch = batch, group = foreground))
+		objects.add(enemies.Galleon(pos = (700,700), speed = 0, player = player, objects = objects, mapsize = mapsize, screen = screen, handler = handler, camera = camera, batch = batch, group = foreground, ui = ui))
+		objects.add(enemies.Whaler(pos = (0,0), speed = 1, player = player, objects = objects, mapsize = mapsize, handler = handler, camera = camera, batch = batch, group = foreground, laserGroup = foregroundl))
+		objects.add(util.HealthPack(health = 10, pos = (500,500), size = (50,50), camera = camera, batch = batch, group = foreground))
 
 		for obj in objects:
 			obj.alive = True

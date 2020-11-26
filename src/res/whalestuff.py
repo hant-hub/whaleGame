@@ -9,7 +9,7 @@ from res.util import visibleEntity, getClosestPointCircle, collision, Hitbox
 from res.enemies import Enemy
 from res.Projectiles import EnemyProjectile, PlayerLaser
 from res.arena import Planet
-from res.PlayerAbilities import LaserStrike, TailStrike, WhaleSong
+from res.PlayerAbilities import *
 
 
 
@@ -72,7 +72,7 @@ class Player(visibleEntity):
 		#abilities
 		self.AbilityOne = TailStrike.TailSlap
 		self.AbilityTwo = LaserStrike.startLaser
-		self.AbilityThree = WhaleSong.Sing
+		self.AbilityThree = HomingWeak.Fire
 
 		self.abilityOneCool = True
 		self.abilityTwoCool = True

@@ -167,7 +167,85 @@ class ProgrammableProjectile(EnemyProjectile):
 		self.alive = False
 
 
+class PlayerSmartProjectile(PlayerProjectile):
 
+	def __init__(self, pos, size, speed, equation, rotation, offset, side, camera, batch, group, enemy, args):
+		super().__init__(pos,size, shapes.Rectangle(*pos, *size, color=(255, 255, 255), batch=batch, group=group))
+
+		self.sprite.anchor_x = (self.sprite.width/2)
+		self.sprite.anchor_y = (self.sprite.height/2)
+		self.sprite.rotation = math.degrees( -math.atan2(0,1)  )
+
+
+		self.vel = (0,0)
+		
+		self.start = time.perf_counter() - offset
+		self.args = [self, args]
+
+		self.speed = speed
+		#this equation describes the velocity curve ie: is a function that outputs velocity (should be a derivative)
+		self.equation = equation
+		self.rotation = math.radians(rotation)
+
+		self.speed = speed
+		self.damage = 0.5
+
+		self.camera = camera
+		self.side = None
+
+
+		#death flag
+		self.alive = True
+
+		self.enemy = enemy
+
+		self.updatevisual(sprite = self.sprite)
+
+
+		clock.schedule_once(self.kill, 10)
+
+
+
+	def update(self, dt):
+		"""Update method Projctile, fundamentallythe same for all Projectiles"""
+
+		x, y = self.pos
+		dx, dy = self.equation(time.perf_counter() - self.start, self.args)
+
+
+		#rotate dx, dy by rotation
+		dx, dy = dx*math.cos(self.rotation) - dy*math.sin(self.rotation), dy*math.cos(self.rotation) + dx*math.sin(self.rotation)
+		 
+
+		x += dx * self.speed * dt
+		y += dy * self.speed * dt
+
+		self.updatevisual(sprite = self.sprite, rotation = math.degrees( -math.atan2(0,1)  ))
+		self.sprite.anchor_x = (self.sprite.width/2)
+		self.sprite.anchor_y = (self.sprite.height/2)
+
+
+		self.pos = (x,y)
+
+
+
+	def hit(self,obj, dt):
+		"""handles behavior when colliding with other objects. Currently does nothing"""
+		if type(obj) == Planet:
+			clock.unschedule(self.kill)
+			self.kill(0)
+
+		elif isinstance(obj, self.enemy):
+			clock.unschedule(self.kill)
+			self.kill(0)
+
+		else:
+			pass
+
+
+	def kill(self, dt):
+		"""Deletes projectile after it reaches the end of its 'life' """
+		self.alive = False
 
 
 class Bomb(EnemyProjectile):

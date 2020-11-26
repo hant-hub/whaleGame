@@ -309,7 +309,7 @@ class FishingBoat(Enemy):
 			clock.unschedule(self.setupFire)
 			self.alive = False
 
-		elif ( not isinstance(obj, (EnemyProjectile, Enemy) )) and ( not obj.dive):
+		elif (type(obj) == type(self.player)) and ( not obj.dive):
 			clock.unschedule(self.fire)
 			clock.unschedule(self.setupFire)
 			self.alive = False
@@ -690,6 +690,7 @@ class Whaler(Enemy):
 
 			if self.sight != None:
 				self.sight.delete()
+				self.sight = None
 
 			self.alive = False
 
@@ -721,7 +722,7 @@ class Whaler(Enemy):
 			if self.aim:
 				self.laserSight()
 
-			if self.sight != None:
+			if self.sight:
 
 				self.sight.x = self.sprite.position[0]
 				self.sight.y = self.sprite.position[1]
@@ -814,7 +815,6 @@ class Galleon(Enemy):
 		self.brain.history.append("idle")
 		self.brain.addState(self.Idle, "idle", 1, 1)
 		self.brain.addState(self.Bomb, "bomb", 3, 1.5)
-		self.brain.addState(self.Shields, "shields", 2, 2)
 		self.brain.addState(self.SmartShot, "smartshot", 3, 0.2)
 		self.brain.addState(self.machinegunShot, "machinegunshot", 3, 0.1)
 		self.brain.decision = Galleon.decision
@@ -851,9 +851,7 @@ class Galleon(Enemy):
 	def decision(body, history):
 
 		if body.health > 5:
-			if history[-1] == "idle" and history[-2] == "machinegunshot":
-				return "shields"
-			elif history[-1] == "idle" and history[-2] == "shields":
+			if history[-1] == "idle" and history[-2] == "shields":
 				return "machinegunshot"
 
 			else:
@@ -887,8 +885,7 @@ class Galleon(Enemy):
 		clock.schedule_once(fire, 0.5, body)
 
 
-	def Shields(_, dt, body):
-		body.hitcool = True
+
 
 	def SmartShot(_, dt, body):
 		def sineShot(time, args):
@@ -987,6 +984,93 @@ class Galleon(Enemy):
 		except:
 			pass
 			
+
+
+
+
+
+
+
+
+
+
+
+class Kraken(Enemy):
+
+	def __init__(self, pos, speed, player, objects, mapsize, screen, handler, camera, batch, group, ui):
+		super().__init__(pos,(screen.width, 600), shapes.Rectangle(*pos, *(screen.width,600), color=(0, 255, 255), batch=batch, group=group))
+
+		#self.pos = pos
+		#self.size = (screen.width, 600)
+		#self.sprite = shapes.Rectangle(*pos, *(screen.width,600), color=(0, 255, 255), batch=batch, group=group)
+		self.speed = speed
+		self.player = player
+		self.objects = objects
+		self.mapsize = mapsize
+		self.screen = screen
+		self.handler = handler
+		self.camera = camera
+		self.batch = batch
+		self.group = group
+		self.ui = ui
+
+		self.alive = True
+
+
+		self.health = 20
+
+		self.healthbar = shapes.Rectangle(x = screen.width/2, y = 50, width = screen.width-100, height = 30, color=(255, 0, 0), batch=batch, group=ui)
+		self.healthbar.anchor_x = screen.width/2
+		self.healthbar.x = self.sprite.width/2
+
+
+		self.CameraSetup()
+
+
+
+	def CameraSetup(self):
+		mx, my = self.mapsize
+		self.player.pos = (mx/2, my/2)
+
+		self.camera.pos = (-(mx/4 - self.screen.width/2),-(my/4 - self.screen.height/2))
+		self.camera.locked = True
+		self.camera.targetZoom = 0.5
+
+	def CameraTearDown(self):
+		self.camera.locked = False
+		self.camera.targetZoom = 0.5
+
+	def healthBar(self):
+			#Grab values
+			maxhealth = 20
+			currenthealth = self.health
+
+			#grab size data
+			width, height = (self.screen.width-100,60)
+
+			#calculate %
+			healthpart = currenthealth/maxhealth
+
+
+			#apply % to size
+			if healthpart < 0:
+				healthpart = 0
+			width = width*healthpart
+
+			#change visual
+			self.healthbar.width = width
+			self.healthbar.anchor_x = width/2
+
+	def update(self, dt):
+		self.healthBar()
+		pass
+
+
+	def hit(self, obj, dt):
+		print(obj)
+
+
+
 
 
 

@@ -82,7 +82,7 @@ class Handler:
 
 
 
-		self.window.push_handlers(on_mouse_drag = on_mouse_motion, on_mouse_motion = on_mouse_motion, on_mouse_press=on_mouse_press, on_mouse_release = on_mouse_release, on_mouse_scroll = on_mouse_scroll, on_key_press = on_key_press)
+		self.window.push_handlers(on_mouse_drag = on_mouse_motion, on_mouse_motion = on_mouse_motion, on_mouse_press=on_mouse_press, on_mouse_release = on_mouse_release, on_key_press = on_key_press)
 
 
 

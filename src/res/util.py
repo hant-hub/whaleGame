@@ -51,33 +51,47 @@ class Camera:
 	def __init__(self, pos, zoom, player, handler, window):
 		self.pos = pos
 		self.zoom = zoom
+		self.targetZoom = 0.5
 		self.player = player
 		self.target = (0,0)
 		self.handler = handler
 		self.window = window
+		self.locked = False
+
 
 	def update(self, dt):
 		px, py = self.player.pos
 		cx, cy = self.handler.target
 
+		dzoom = self.targetZoom - self.zoom
+		self.zoom += dzoom * dt
 
-		self.target = (px, py)
+		if not self.locked:
+			self.target = (px, py)
 
-		tx, ty = -(px - self.window.width/2),-(py - self.window.height/2)
+			tx, ty = -(px - self.window.width/2),-(py - self.window.height/2)
 
-		dist = math.dist(self.pos, (tx,ty))
+			dist = math.dist(self.pos, (tx,ty))
 
-	
+			
 
-		x, y = self.pos
+			x, y = self.pos
 
-		tx -= x
-		ty -= y
+			tx -= x
+			ty -= y
 
-		x += tx * dt * (1.25/self.zoom)
-		y += ty * dt * (1.25/self.zoom)
+			if abs(tx) < (10 * dt * 1.25/self.zoom):
+				tx = 0
 
-		self.pos = (x,y)
+			if abs(ty) < (10 * dt * 1.25/self.zoom):
+				ty = 0
+
+
+		
+			x += tx * dt * (1.25/self.zoom)
+			y += ty * dt * (1.25/self.zoom)
+
+			self.pos = (x,y)
 
 
 
@@ -114,8 +128,8 @@ class visibleEntity:
 		tx, ty = self.camera.target
 		width, height = self.size
 
-		sprite.x = ((x-tx) * self.camera.zoom) + cx + (tx)
-		sprite.y = ((y-ty) * self.camera.zoom) + cy + (ty)
+		sprite.x = ((x-tx) * self.camera.zoom) + (cx) + (tx)
+		sprite.y = ((y-ty) * self.camera.zoom) + (cy) + (ty)
 
 
 		sprite.width = width * self.camera.zoom

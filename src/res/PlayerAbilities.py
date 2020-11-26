@@ -98,3 +98,46 @@ class WhaleSong:
 
 
 
+class HomingWeak:
+
+	def homing(time, args):
+		player = args[1]
+		parent = args[0]
+
+		dx, dy = parent.vel
+		x, y = parent.pos
+		tx, ty = player.pos
+
+		tdx, tdy = (tx-x), (ty-y)
+
+		dx += (tdx - dx) * 0.01
+		dy += (tdy - dy) * 0.01
+
+		parent.vel = (dx, dy)
+
+
+		return (dx,dy)
+
+	def getClosestEnemy(parent):
+		objects = parent.objects.copy()
+		target = next(obj for obj in objects if isinstance(obj, enemies.Enemy))
+		while True:
+			for obj in [obj for obj in objects if isinstance(obj, enemies.Enemy)]:
+				if math.dist(target.pos, parent.pos) > math.dist(obj.pos, parent.pos):
+					objects.remove(obj)
+					target = obj
+
+				yield obj
+
+
+
+
+	def Fire(parent, cool):
+		parent.FlipBool(0, cool)
+		clock.schedule_once(parent.FlipBool, 4, cool)
+
+		things = HomingWeak.getClosestEnemy(parent)
+
+		for x in range(4):
+			parent.objects.add(Projectiles.PlayerSmartProjectile(pos = parent.pos, size = (20,20), speed = 1, equation = HomingWeak.homing, rotation = 0 , offset = 0, side = None, camera = parent.camera, batch = parent.batch, group = parent.group, enemy = enemies.Enemy, args = next(things)))
+
