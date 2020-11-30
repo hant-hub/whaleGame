@@ -8,7 +8,7 @@ instantiating projectiles with functions
 
 from pyglet import *
 import math, time
-from res.util import visibleEntity
+from res.util import visibleEntity, Hitbox
 from res.arena import Planet
 
 
@@ -32,7 +32,8 @@ class Harpoon(EnemyProjectile):
 
 
 		
-		
+		self.group = group
+		self.batch = batch
 		
 
 		self.speed = speed
@@ -81,6 +82,9 @@ class Harpoon(EnemyProjectile):
 			clock.unschedule(self.kill)
 			self.kill(0)
 
+		elif isinstance(obj, Hitbox):
+			obj.projectileEffect(self)
+
 		else:
 			pass
 
@@ -89,6 +93,76 @@ class Harpoon(EnemyProjectile):
 		"""Deletes projectile after it reaches the end of its 'life' """
 		self.alive = False
 
+
+class PlayerHarpoon(PlayerProjectile):
+
+	def __init__(self, pos, size, speed, vel, side, camera, batch, group):
+		super().__init__(pos,size, shapes.Rectangle(*pos, *size, color=(255, 255, 255), batch=batch, group=group))
+		dx, dy = vel
+
+		self.sprite.anchor_x = (self.sprite.width/2)
+		self.sprite.anchor_y = (self.sprite.height/2)
+		self.sprite.rotation = math.degrees( -math.atan2(dy, dx)  )
+
+
+		self.group = group
+		self.batch = batch
+		
+		
+
+		self.speed = speed
+		self.vel = vel
+			
+		self.speed = speed
+		self.damage = 15
+
+		self.camera = camera
+		self.side = None
+
+
+		#death flag
+		self.alive = True
+
+		self.updatevisual(sprite = self.sprite)
+
+
+		clock.schedule_once(self.kill, 4)
+
+
+
+
+	def update(self, dt):
+		"""Update method Projctile, fundamentallythe same for all Projectiles"""
+
+		x, y = self.pos
+		dx, dy = self.vel
+
+
+		x += dx * self.speed
+		y += dy * self.speed
+
+		self.updatevisual(sprite = self.sprite)
+		self.sprite.anchor_x = (self.sprite.width/2)
+		self.sprite.anchor_y = (self.sprite.height/2)
+
+
+		self.pos = (x,y)
+		self.vel = (dx,dy)
+
+
+	def hit(self,obj, dt):
+		"""handles behavior when colliding with other objects. Currently does nothing"""
+		if type(obj) == Planet:
+			clock.unschedule(self.kill)
+			self.kill(0)
+
+		else:
+			pass
+
+
+	def kill(self, dt):
+		"""Deletes projectile after it reaches the end of its 'life' """
+		self.alive = False
 
 
 
@@ -101,7 +175,8 @@ class ProgrammableProjectile(EnemyProjectile):
 		self.sprite.anchor_y = (self.sprite.height/2)
 		self.sprite.rotation = math.degrees( -math.atan2(0,1)  )
 
-
+		self.group = group
+		self.batch = batch
 		
 		
 		self.start = time.perf_counter() - offset
@@ -158,6 +233,9 @@ class ProgrammableProjectile(EnemyProjectile):
 			clock.unschedule(self.kill)
 			self.kill(0)
 
+		elif isinstance(obj, Hitbox):
+			obj.projectileEffect(self)
+
 		else:
 			pass
 
@@ -193,6 +271,9 @@ class PlayerSmartProjectile(PlayerProjectile):
 		self.camera = camera
 		self.side = None
 
+
+		self.group = group
+		self.batch = batch
 
 		#death flag
 		self.alive = True
@@ -306,8 +387,13 @@ class Bomb(EnemyProjectile):
 			clock.unschedule(self.kill)
 			self.kill(0)
 
+		elif isinstance(obj, Hitbox):
+			obj.projectileEffect(self)
+
 		else:
 			pass
+
+	
 
 
 	def kill(self, dt):

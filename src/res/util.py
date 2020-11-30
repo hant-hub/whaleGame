@@ -153,13 +153,14 @@ class visibleEntity:
 
 class Hitbox(visibleEntity):
 
-	def __init__(self, pos, size, rotation, sprite, camera, duration, enemyEffect, playerEffect):
+	def __init__(self, pos, size, rotation, sprite, camera, duration, enemyEffect, playerEffect, projectileEffect = None):
 		super().__init__(pos = pos,size = size, sprite = sprite)
 		self.camera = camera
 		self.sprite.anchor_y = self.sprite.height/2
 		self.rotation = rotation
 		self.enemyEffect = enemyEffect
 		self.playerEffect = playerEffect
+		self.projectileEffect = projectileEffect
 		self.alive = True
 
 		self.sprite.rotation = rotation

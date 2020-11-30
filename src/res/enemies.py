@@ -6,7 +6,7 @@ from pyglet import *
 import math
 from res.util import visibleEntity, getClosestPointCircle, Hitbox
 from random import randint, random
-from res.Projectiles import ShootHarpoon, EnemyProjectile, ProgrammableProjectileFire, ShootBomb, Laser, PlayerProjectile
+from res.Projectiles import ShootHarpoon, EnemyProjectile, ProgrammableProjectileFire, ShootBomb, Laser, PlayerProjectile, PlayerLaser, PlayerHarpoon
 from res.arena import Planet
 from res import BossAI, collectibles
 
@@ -997,8 +997,10 @@ class Galleon(Enemy):
 
 class Kraken(Enemy):
 
-	def __init__(self, pos, speed, player, objects, mapsize, screen, handler, camera, batch, group, ui):
-		super().__init__(pos,(screen.width, 600), shapes.Rectangle(*pos, *(screen.width,600), color=(0, 255, 255), batch=batch, group=group))
+	def __init__(self, pos, speed, player, objects, mapsize, screen, handler, camera, batch, group, lasergroup, ui):
+		super().__init__((mapsize[0]/2, (mapsize[1]/2)-screen.height),(screen.width*2, 600), shapes.Rectangle(*(mapsize[0]/2, mapsize[1]/2), *(screen.width*2,600), color=(0, 255, 255), batch=batch, group=group))
+		self.sprite.anchor_x = self.sprite.width/2
+		self.sprite.anchor_y = self.sprite.height/2
 
 		#self.pos = pos
 		#self.size = (screen.width, 600)
@@ -1013,18 +1015,52 @@ class Kraken(Enemy):
 		self.batch = batch
 		self.group = group
 		self.ui = ui
+		self.lasergroup = lasergroup
 
 		self.alive = True
 
 
-		self.health = 20
+		self.health = 15
+		self.vulnerable = False
+		self.hitcool = False
 
 		self.healthbar = shapes.Rectangle(x = screen.width/2, y = 50, width = screen.width-100, height = 30, color=(255, 0, 0), batch=batch, group=ui)
 		self.healthbar.anchor_x = screen.width/2
-		self.healthbar.x = self.sprite.width/2
+		self.healthbar.x = screen.width/2
 
 
 		self.CameraSetup()
+
+		clock.schedule_interval(self.InkShot, 3)
+
+
+	def idle(self, dt, *args):
+		pass
+
+
+	def chasePhaseChange(self, dt, *args):
+		pass
+
+	def InkShot(self, dt, *args):
+		ShootBomb(me = self, other = self.player.pos, fragNum = 6, output = self.objects)
+
+
+	def TentacleSlap(self, dt, *args):
+		pos = self.player.sprite.position
+		telegraph = shapes.Rectangle(x = (pos[0]), y = 0, width = 150, height = self.screen.height*3, color=(255, 0, 0), batch=self.batch, group=self.lasergroup)
+		telegraph.anchor_x = telegraph.width/2
+		telegraph.opacity = 100
+
+		def createLaser(dt, body, pos, telegraph):
+			telegraph.delete()
+			telegraph = None
+			body.objects.add(Laser(pos = (pos[0],body.pos[1]), width = 300, target = pos, camera = body.camera, batch = body.batch, group = body.lasergroup, duration = 3))
+
+		clock.schedule_once(createLaser, 5, body = self, pos = self.player.pos, telegraph = telegraph)
+
+
+
+
 
 
 
@@ -1063,11 +1099,61 @@ class Kraken(Enemy):
 
 	def update(self, dt):
 		self.healthBar()
-		pass
+		self.updatevisual(sprite = self.sprite)
+		self.sprite.anchor_x = self.sprite.width/2
+		self.sprite.anchor_y = self.sprite.height/2
+		
+
+
+
+	def hitflip(self, dt):
+		self.hitcool = False
+
+	def vulflip(self, dt):
+		self.vulnerable = False
 
 
 	def hit(self, obj, dt):
-		print(obj)
+
+
+		if self.vulnerable:
+			if self.hitcool:
+				return
+
+			if (isinstance(obj, Hitbox)):
+				self.health -= 2
+
+
+			elif (isinstance(obj, PlayerProjectile)):
+				self.health -= obj.damage
+				self.hitcool = True
+				clock.schedule_once(self.hitflip, 0.5)
+
+
+			elif (type(obj) == type(self.player)) and (obj.ram):
+				self.health -= obj.meleeDamage
+				self.hitcool = True
+				clock.schedule_once(self.hitflip, 0.5)
+
+
+
+		elif isinstance(obj, PlayerProjectile) and (not self.hitcool):
+			if isinstance(obj, PlayerLaser):
+				self.health -= 0.5
+				self.hitcool = True
+				clock.schedule_once(self.hitflip, 1.5)
+
+			elif isinstance(obj, PlayerHarpoon):
+				self.vulnerable = True
+				self.health -= 1
+				obj.alive = False
+				clock.schedule_once(self.vulflip, 5)
+
+
+
+
+
+		
 
 
 

@@ -8,6 +8,7 @@ from res import util, Projectiles, enemies
 class TailStrike:
 
 	def TailSlap(parent,cool):
+
 		def EnemyTailHit(enemy):
 			px, py = parent.pos
 			ex, ey = enemy.pos
@@ -32,11 +33,38 @@ class TailStrike:
 				enemy.hit(parent, 0)
 
 
+		def ProjectileTailSlap(projectile):
+			clock.unschedule(projectile.kill)
+
+
+			if isinstance(projectile, Projectiles.ProgrammableProjectile):
+				rotation = projectile.rotation + math.radians(180)
+
+				vel = (math.cos(rotation), math.sin(rotation))
+
+				parent.objects.add(Projectiles.PlayerHarpoon(pos = projectile.pos, size = projectile.size, speed = 15, vel = vel, side = None, camera = projectile.camera, batch = projectile.batch, group = projectile.group))
+
+				projectile.alive = False
+
+
+
+			else:
+				vel = (-projectile.vel[0], -projectile.vel[1])
+
+
+				parent.objects.add(Projectiles.PlayerHarpoon(pos = projectile.pos, size = projectile.size, speed = 15, vel = vel, side = None, camera = projectile.camera, batch = projectile.batch, group = projectile.group))
+
+
+				projectile.alive = False
+
+
+
+
 
 
 
 		parent.FlipBool(0, cool)
-		parent.objects.add(util.Hitbox(pos = parent.pos, size = (500, 550), rotation = (-math.degrees(math.atan2(parent.vel[1], parent.vel[0]))) - 180, sprite = shapes.Rectangle(*parent.pos, width = 500, height = 550, color = (0,255,0), batch = parent.batch, group = parent.group), camera = parent.camera, duration = 0.25, enemyEffect = EnemyTailHit, playerEffect = (lambda x: None)))
+		parent.objects.add(util.Hitbox(pos = parent.pos, size = (500, 550), rotation = (-math.degrees(math.atan2(parent.vel[1], parent.vel[0]))) - 180, sprite = shapes.Rectangle(*parent.pos, width = 500, height = 550, color = (0,255,0), batch = parent.batch, group = parent.group), camera = parent.camera, duration = 0.25, enemyEffect = EnemyTailHit, playerEffect = (lambda x: None), projectileEffect = ProjectileTailSlap))
 		clock.schedule_once(parent.FlipBool, 3, cool)
 
 
