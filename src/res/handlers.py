@@ -77,6 +77,9 @@ class Handler:
 			elif (symbol == window.key.TAB):
 				self.pauseMenu = True
 
+			elif (symbol == window.key.L):
+				self.camera.locked = not self.camera.locked
+
 			else:
 				pass
 

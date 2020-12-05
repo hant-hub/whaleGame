@@ -168,7 +168,7 @@ class PlayerHarpoon(PlayerProjectile):
 
 class ProgrammableProjectile(EnemyProjectile):
 
-	def __init__(self, pos, size, speed, equation, rotation, offset, side, camera, batch, group, args):
+	def __init__(self, pos, size, speed, equation, rotation, offset, side, camera, batch, group, duration, args):
 		super().__init__(pos,size, shapes.Rectangle(*pos, *size, color=(255, 255, 255), batch=batch, group=group))
 
 		self.sprite.anchor_x = (self.sprite.width/2)
@@ -200,7 +200,7 @@ class ProgrammableProjectile(EnemyProjectile):
 		self.updatevisual(sprite = self.sprite)
 
 
-		clock.schedule_once(self.kill, 10)
+		clock.schedule_once(self.kill, duration)
 
 
 
@@ -496,8 +496,8 @@ class PlayerLaser(PlayerProjectile):
 
 
 
-def ProgrammableProjectileFire(me, other, equation, rotation, output, offset = 0, args = None):
-	output.add(ProgrammableProjectile(pos = me.pos, size = (30,30), speed = 15, equation = equation, rotation = rotation, offset = offset, side = type(me), camera = me.camera, batch = me.batch, group = me.group, args = args))
+def ProgrammableProjectileFire(me, other, equation, rotation, output, offset = 0, duration = 10, args = None, speed = 15):
+	output.add(ProgrammableProjectile(pos = me.pos, size = (30,30), speed = speed, equation = equation, rotation = rotation, offset = offset, side = type(me), camera = me.camera, batch = me.batch, group = me.group, duration = duration, args = args))
 
 
 def ShootBomb(me, other, fragNum, output):

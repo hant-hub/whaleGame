@@ -72,7 +72,7 @@ class Player(visibleEntity):
 		#abilities
 		self.AbilityOne = TailStrike.TailSlap
 		self.AbilityTwo = LaserStrike.startLaser
-		self.AbilityThree = HomingWeak.Fire
+		self.AbilityThree = WhaleSong.Sing
 
 		self.abilityOneCool = True
 		self.abilityTwoCool = True

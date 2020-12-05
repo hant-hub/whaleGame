@@ -61,7 +61,6 @@ class Camera:
 
 	def update(self, dt):
 		px, py = self.player.pos
-		cx, cy = self.handler.target
 
 		dzoom = self.targetZoom - self.zoom
 		self.zoom += dzoom * dt
@@ -69,11 +68,9 @@ class Camera:
 		if not self.locked:
 			self.target = (px, py)
 
-			tx, ty = -(px - self.window.width/2),-(py - self.window.height/2)
+			tx, ty = -(px - self.window.width/2), -(py - self.window.height/2)
 
 			dist = math.dist(self.pos, (tx,ty))
-
-			
 
 			x, y = self.pos
 
@@ -92,6 +89,8 @@ class Camera:
 			y += ty * dt * (1.25/self.zoom)
 
 			self.pos = (x,y)
+
+
 
 
 

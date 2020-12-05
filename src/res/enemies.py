@@ -6,7 +6,7 @@ from pyglet import *
 import math
 from res.util import visibleEntity, getClosestPointCircle, Hitbox
 from random import randint, random
-from res.Projectiles import ShootHarpoon, EnemyProjectile, ProgrammableProjectileFire, ShootBomb, Laser, PlayerProjectile, PlayerLaser, PlayerHarpoon
+from res.Projectiles import ShootHarpoon, EnemyProjectile, ProgrammableProjectileFire, ShootBomb, Laser, PlayerProjectile, PlayerLaser, PlayerHarpoon, Bomb
 from res.arena import Planet
 from res import BossAI, collectibles
 
@@ -851,7 +851,7 @@ class Galleon(Enemy):
 	def decision(body, history):
 
 		if body.health > 5:
-			if history[-1] == "idle" and history[-2] == "shields":
+			if history[-1] == "idle":
 				return "machinegunshot"
 
 			else:
@@ -1019,8 +1019,10 @@ class Kraken(Enemy):
 
 		self.alive = True
 
+		self.chase = False
 
-		self.health = 15
+
+		self.health = 0.5
 		self.vulnerable = False
 		self.hitcool = False
 
@@ -1031,18 +1033,43 @@ class Kraken(Enemy):
 
 		self.CameraSetup()
 
-		clock.schedule_interval(self.InkShot, 3)
+		clock.schedule_interval(self.TentacleSlap, 6)
 
 
 	def idle(self, dt, *args):
 		pass
+		
+	def SineBeam(self, dt, *args):
+		def sineShot(time, args):
+			dx = ((args+10)/10) + 30
+			dy = (math.sin(time*8) * 60)
+
+			return dx, dy
+
+		
+		ProgrammableProjectileFire(me = self, other = self.player.pos, equation = sineShot, rotation = math.degrees(math.atan2(self.player.pos[1] - self.pos[1], self.player.pos[0] - self.pos[0])), output = self.objects, duration = 5, args = self.speed/self.camera.zoom)
+		ProgrammableProjectileFire(me = self, other = self.player.pos, equation = sineShot, rotation = math.degrees(math.atan2(self.player.pos[1] - self.pos[1], self.player.pos[0] - self.pos[0])), output = self.objects, offset = math.pi/8, duration = 5, args = self.speed/self.camera.zoom)
 
 
-	def chasePhaseChange(self, dt, *args):
-		pass
+
 
 	def InkShot(self, dt, *args):
-		ShootBomb(me = self, other = self.player.pos, fragNum = 6, output = self.objects)
+
+		tx, ty = self.player.pos
+		x, y = self.pos
+
+		tx -= x
+		ty -= y
+
+		ty += self.speed/self.camera.zoom
+
+		
+
+		tx /= math.dist(self.player.pos, self.pos)
+		ty /= math.dist(self.player.pos, self.pos)
+
+		
+		self.objects.add(Bomb(pos = self.pos, size = (100,100), speed = 13, fragNum = 6, objects = self.objects, vel = (tx,ty), side = type(self), camera = self.camera, batch = self.batch, group = self.group))
 
 
 	def TentacleSlap(self, dt, *args):
@@ -1059,20 +1086,19 @@ class Kraken(Enemy):
 		clock.schedule_once(createLaser, 5, body = self, pos = self.player.pos, telegraph = telegraph)
 
 
-
-
-
-
-
 	def CameraSetup(self):
 		mx, my = self.mapsize
 		self.player.pos = (mx/2, my/2)
 
 		self.camera.pos = (-(mx/4 - self.screen.width/2),-(my/4 - self.screen.height/2))
+
 		self.camera.locked = True
 		self.camera.targetZoom = 0.5
 
 	def CameraTearDown(self):
+		mx,my = self.player.pos
+		self.camera.target = self.player.pos
+		self.camera.pos = (-(mx - self.screen.width/2),-(my - self.screen.height/2))
 		self.camera.locked = False
 		self.camera.targetZoom = 0.5
 
@@ -1098,11 +1124,28 @@ class Kraken(Enemy):
 			self.healthbar.anchor_x = width/2
 
 	def update(self, dt):
+		
+		if self.health <= 0 and (not self.chase):
+			self.chase = True
+			clock.schedule_once(self.kill, 120)
+
+
+
+		if self.chase:
+			x, y = self.pos
+			y += ((self.speed+self.camera.target[1])/self.camera.zoom - self.camera.target[1]) * dt
+			self.pos = (x,y)
+
+			cx, cy = self.camera.pos
+			cy -= self.speed*dt
+			self.camera.pos = (cx,cy)
+
+			self.speed += 0.3
+
 		self.healthBar()
 		self.updatevisual(sprite = self.sprite)
 		self.sprite.anchor_x = self.sprite.width/2
 		self.sprite.anchor_y = self.sprite.height/2
-		
 
 
 
@@ -1151,7 +1194,11 @@ class Kraken(Enemy):
 
 
 
+	def kill(self, dt):
+		self.CameraTearDown()
+		self.alive = False
 
+		clock.unschedule(self.InkShot)
 
 		
 
