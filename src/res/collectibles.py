@@ -86,12 +86,13 @@ class DiveBooster(SquidPowerup):
 		super().__init__(pos, size, (0,0,255),  camera, batch, group)
 
 	def resetDive(self, dt, obj):
-		obj.infinityDive = False
+		obj.damage = True
 
 	def hit(self, obj, dt):
 		if isinstance(obj, whalestuff.Player):
 			self.alive = False
-			obj.infinityDive = True
+			obj.damage = False
+			clock.unschedule()
 			clock.schedule_once(self.resetDive, 9, obj)
 
 

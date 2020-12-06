@@ -92,7 +92,7 @@ def main():
 	#objects.add(enemies.Whaler(pos = (0,0), speed = 1, player = player, objects = objects, mapsize = mapsize, handler = handler, camera = camera, batch = batch, group = foreground, laserGroup = foregroundl))
 	# objects.add(collectibles.HealthPack(health = 1000, pos = (500,500), size = (50,50), camera = camera, batch = batch, group = foreground))
 	# objects.add(collectibles.DamageBooster(pos = (500,500), size = (75,75), camera = camera, batch=batch, group=foreground))
-	objects.add(enemies.Kraken(pos = (0, -450), speed = 0.00001, player = player, objects = objects, mapsize = mapsize, screen = screen, handler = handler, camera = camera, batch = batch, group = foreground, lasergroup = foregroundl, ui = ui))
+	objects.add(enemies.Kraken(pos = (0, -450), speed = 10, player = player, objects = objects, mapsize = mapsize, screen = screen, handler = handler, camera = camera, batch = batch, group = foreground, lasergroup = foregroundl, ui = ui))
 	
 
 	def setup():
@@ -135,7 +135,7 @@ def main():
 		objects.add(enemies.Galley(pos = (screen.width/2+400, screen.height/2 - 100), speed = 1, player = player, objects = objects, handler = handler, camera = camera, batch = batch, group = foreground))
 		objects.add(enemies.Galleon(pos = (700,700), speed = 0, player = player, objects = objects, mapsize = mapsize, screen = screen, handler = handler, camera = camera, batch = batch, group = foreground, ui = ui))
 		objects.add(enemies.Whaler(pos = (0,0), speed = 1, player = player, objects = objects, mapsize = mapsize, handler = handler, camera = camera, batch = batch, group = foreground, laserGroup = foregroundl))
-		objects.add(util.HealthPack(health = 10, pos = (500,500), size = (50,50), camera = camera, batch = batch, group = foreground))
+		objects.add(collectibles.HealthPack(health = 10, pos = (500,500), size = (50,50), camera = camera, batch = batch, group = foreground))
 
 		for obj in objects:
 			obj.alive = True

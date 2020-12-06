@@ -20,10 +20,6 @@ class GUI:
 		#create armourbar
 		self.armourbar = shapes.Rectangle(*(30, window.height - 110), *(400, 40), color=(100,100,100), batch=batch, group=group)
 
-
-		#create airmeter
-		self.airmeter = shapes.Rectangle(*(window.width-500, window.height - 60), *(400,40), color=(0, 0, 255), batch=batch, group=group)
-
 		#create Primary Ability indicator
 		self.tail = shapes.Rectangle(*(30, window.height - 180), *(25,50), color = (255,0,0), batch = batch, group = group)
 
@@ -36,7 +32,6 @@ class GUI:
 	def update(self, dt):
 		self.HealthBar()
 		self.ArmourBar()
-		self.AirMeter()
 		self.Firstindicator()
 		self.SecondIndicator()
 		self.ThirdIndicator()
@@ -83,18 +78,6 @@ class GUI:
 		#change visual
 		self.armourbar.width = width
 
-
-
-	def AirMeter(self):
-		airpart = self.player.air/100
-
-		maxwidth, maxheight = (400,40)
-
-
-
-		width = maxwidth * airpart
-
-		self.airmeter.width = width
 
 	def Firstindicator(self):
 		tail = self.player.abilityOneCool

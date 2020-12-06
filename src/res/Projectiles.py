@@ -414,7 +414,7 @@ class Bomb(EnemyProjectile):
 class Laser(EnemyProjectile):
 
 	def __init__(self, pos, width, target, camera, batch, group, duration = 2.5):
-		super().__init__(pos, (10_000,width), shapes.Rectangle(*pos, *(10_000,width), color=(255, 0, 0), batch=batch, group=group))
+		super().__init__(pos, (20_000,width), shapes.Rectangle(*pos, *(20_000,width), color=(255, 0, 0), batch=batch, group=group))
 		
 		tx, ty = target
 		x, y = pos

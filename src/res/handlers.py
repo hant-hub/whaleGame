@@ -47,12 +47,6 @@ class Handler:
 				self.target = (x,y)
 				self.player.Ram.ramStart(parent = player)
 
-			if button == window.mouse.RIGHT:
-				self.player.damage = False
-				self.player.dive = True
-				self.player.sprite.opacity = 128
-				self.ramcool = True
-
 
 
 		def on_mouse_release(x,y, button, modifiers):

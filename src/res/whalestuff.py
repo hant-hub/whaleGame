@@ -42,10 +42,6 @@ class Player(visibleEntity):
 		self.objects = objects
 		self.turnspeed = 0.03
 
-		#diving flag
-		self.dive = False
-		self.infinityDive = False
-		self.air = 100
 
 		#setup basic attack
 		self.ramcool = True
@@ -87,20 +83,6 @@ class Player(visibleEntity):
 
 
 		#dive logic
-
-		if self.dive and (not self.infinityDive):
-			self.air -= 0.5
-
-		elif self.air < 100:
-			self.air += 0.2
-
-
-
-		if self.air <= 0:
-			self.dive = False
-			self.damage = True
-			self.sprite.opacity = 255
-
 
 		self.speed_limit()
 		
@@ -342,7 +324,7 @@ class Player(visibleEntity):
 
 			#set end
 			clock.schedule_once(Player.Ram.ramEnd, 0.3, parent)
-			clock.schedule_once(Player.Ram.ramcool, 0.5, parent)
+			clock.schedule_once(Player.Ram.ramcool, 0.4, parent)
 
 		def ramEnd(dt, parent):
 			"""tears down/resets all flags and value changes for 'ram' """
@@ -364,8 +346,8 @@ class Player(visibleEntity):
 
 
 			#apply movement
-			x += dx * speed * dt * 3
-			y += dy * speed * dt * 3
+			x += dx * speed * dt * 4
+			y += dy * speed * dt * 4
 
 			return (x,y, dx, dy)
 

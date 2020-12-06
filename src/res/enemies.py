@@ -4,6 +4,7 @@
 
 from pyglet import *
 import math
+from random import randint
 from res.util import visibleEntity, getClosestPointCircle, Hitbox
 from random import randint, random
 from res.Projectiles import ShootHarpoon, EnemyProjectile, ProgrammableProjectileFire, ShootBomb, Laser, PlayerProjectile, PlayerLaser, PlayerHarpoon, Bomb
@@ -309,7 +310,7 @@ class FishingBoat(Enemy):
 			clock.unschedule(self.setupFire)
 			self.alive = False
 
-		elif (type(obj) == type(self.player)) and ( not obj.dive):
+		elif (type(obj) == type(self.player)) and (obj.ram):
 			clock.unschedule(self.fire)
 			clock.unschedule(self.setupFire)
 			self.alive = False
@@ -1033,7 +1034,52 @@ class Kraken(Enemy):
 
 		self.CameraSetup()
 
-		clock.schedule_interval(self.TentacleSlap, 6)
+		self.brain = BossAI.AiBrain(self)
+		self.brain.history.append("idle")
+		self.brain.history.append("idle")
+		self.brain.addState(behavior = self.idle, stateName = "idle", stateLength = 3, interval = 3)
+		self.brain.addState(behavior = self.SineBeam, stateName = "sinebeam", stateLength = 3, interval = 0.1)
+		self.brain.addState(behavior = self.InkShot, stateName = "inkshot", stateLength = 5, interval = 2)
+		self.brain.addState(behavior = self.TentacleSlap, stateName = "tentacleslap", stateLength = 6, interval = 3)
+
+		self.brain.addState(behavior = self.SineBeam, stateName = "sinebeamChase", stateLength = 3, interval = 0.2)
+		self.brain.addState(behavior = self.InkShot, stateName = "inkshotChase", stateLength = 5, interval = 1)
+		self.brain.addState(behavior = self.TentacleSlap, stateName = "tentacleslapChase", stateLength = 6, interval = 1.5)
+
+		self.brain.decision = Kraken.decision
+
+	def decision(body, history):
+		if body.chase:
+			attack = randint(0,2)
+
+			if attack == 0:
+				return "sinebeamChase"
+			elif attack == 1:
+				return "inkshotChase"
+			elif attack == 2:
+				return "tentacleslapChase"
+
+		else:
+			if (history[-2] != "idle") or (body.vulnerable):
+				return "idle"
+
+			else:
+				attack = randint(0,2)
+
+				if attack == 0:
+					return "sinebeam"
+				elif attack == 1:
+					return "inkshot"
+				elif attack == 2:
+					return "tentacleslap"
+
+
+
+
+
+
+
+
 
 
 	def idle(self, dt, *args):
@@ -1081,9 +1127,12 @@ class Kraken(Enemy):
 		def createLaser(dt, body, pos, telegraph):
 			telegraph.delete()
 			telegraph = None
-			body.objects.add(Laser(pos = (pos[0],body.pos[1]), width = 300, target = pos, camera = body.camera, batch = body.batch, group = body.lasergroup, duration = 3))
+			thing = Laser(pos = (pos[0],body.pos[1]), width = 300, target = pos, camera = body.camera, batch = body.batch, group = body.lasergroup, duration = 1.5)
+			thing.sprite.rotation = -90
+			body.objects.add(thing)
 
-		clock.schedule_once(createLaser, 5, body = self, pos = self.player.pos, telegraph = telegraph)
+
+		clock.schedule_once(createLaser, 1, body = self, pos = self.player.pos, telegraph = telegraph)
 
 
 	def CameraSetup(self):
@@ -1124,6 +1173,7 @@ class Kraken(Enemy):
 			self.healthbar.anchor_x = width/2
 
 	def update(self, dt):
+
 		
 		if self.health <= 0 and (not self.chase):
 			self.chase = True
@@ -1140,14 +1190,31 @@ class Kraken(Enemy):
 			cy -= self.speed*dt
 			self.camera.pos = (cx,cy)
 
-			self.speed += 0.3
+			if self.speed < 350:
+				self.speed += 0.3
 
+			if self.pos[1] > self.mapsize[1]*1.5:
+				x, y = self.pos
+				px, py = self.player.pos
+				cx, cy = self.camera.pos
+
+				y -= ((self.mapsize[1]*1.5)+self.camera.target[1])/self.camera.zoom - self.camera.target[1]
+				py -= ((self.mapsize[1]*1.5)+self.camera.target[1])/self.camera.zoom - self.camera.target[1]
+				cy += self.mapsize[1]*1.5
+
+
+				self.pos = (x,y)
+				self.player.pos = (px,py)
+				self.camera.pos = (cx,cy)
+
+
+		self.brain.switch()
 		self.healthBar()
 		self.updatevisual(sprite = self.sprite)
 		self.sprite.anchor_x = self.sprite.width/2
 		self.sprite.anchor_y = self.sprite.height/2
 
-
+		
 
 	def hitflip(self, dt):
 		self.hitcool = False
@@ -1203,7 +1270,25 @@ class Kraken(Enemy):
 		
 
 
+	def delete(self):
+		self.objects.add(collectibles.ArmourDrop(pos = self.pos, size = (40,40), camera = self.camera, batch = self.batch, group = self.group))
 
+		self.sprite.delete()
+		del self.sprite
+
+		try:
+			self.healthbar.delete()
+			del self.healthbar
+
+		except:
+			pass
+
+		try:
+			self.brain.kill()
+			del self.brain
+
+		except:
+			pass
 
 
 
