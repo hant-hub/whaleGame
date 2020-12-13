@@ -1,0 +1,27 @@
+Version 0.1
+  -Has camera
+  -Contains Dive ability
+  -Fishing Boat Enemies
+  -Fishing Boats die on contact
+
+Version 0.2
+  -zoom functionality
+  -new enemies
+  -planets
+  -starry background
+
+Version 0.3
+  -Two New Bosses
+	-Kraken
+		a. An octopus boss that covers the screen and chases you
+	-Galleon
+		a. A pirate ship with multiple weapons that runs away from you
+
+  -Multiple new enemies
+  -Lasers
+  -4 new Player Special Abilities
+  -Removed Dive Ability
+  -Collectible power ups
+  -health packs
+  -armour Bar
+  -armour pickups

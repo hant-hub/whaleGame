@@ -184,7 +184,18 @@ class Player(visibleEntity):
 		when being hit with an enemy projectile, not taking damage from running into enemies, etc.
 		"""
 
-		if ((type(obj) == Enemy)):
+		if (isinstance(obj, Enemy)):
+			if hasattr(obj, "spiky") and self.damage:
+				if obj.spiky:
+					self.armour -= obj.damage
+
+					if self.armour < 0:
+						self.health += self.armour
+						self.armour = 0
+
+					self.damage = False
+					clock.schedule_once(self.FlipBool, 0.1, "self.damage")
+
 			pass
 
 		elif (type(obj) == Planet):
@@ -352,7 +363,6 @@ class Player(visibleEntity):
 			return (x,y, dx, dy)
 
 	
-
 
 
 

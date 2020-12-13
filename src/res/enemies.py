@@ -1021,9 +1021,11 @@ class Kraken(Enemy):
 		self.alive = True
 
 		self.chase = False
+		self.spiky = False
+		self.damage = 2
 
 
-		self.health = 0.5
+		self.health = 15
 		self.vulnerable = False
 		self.hitcool = False
 
@@ -1049,6 +1051,7 @@ class Kraken(Enemy):
 		self.brain.decision = Kraken.decision
 
 	def decision(body, history):
+
 		if body.chase:
 			attack = randint(0,2)
 
@@ -1104,17 +1107,17 @@ class Kraken(Enemy):
 		tx, ty = self.player.pos
 		x, y = self.pos
 
+		ty += self.speed/self.camera.zoom*3
+
 		tx -= x
 		ty -= y
 
-		ty += self.speed/self.camera.zoom
-
-		
 
 		tx /= math.dist(self.player.pos, self.pos)
 		ty /= math.dist(self.player.pos, self.pos)
 
-		
+
+	
 		self.objects.add(Bomb(pos = self.pos, size = (100,100), speed = 13, fragNum = 6, objects = self.objects, vel = (tx,ty), side = type(self), camera = self.camera, batch = self.batch, group = self.group))
 
 
@@ -1152,31 +1155,32 @@ class Kraken(Enemy):
 		self.camera.targetZoom = 0.5
 
 	def healthBar(self):
-			#Grab values
-			maxhealth = 20
-			currenthealth = self.health
+		#Grab values
+		maxhealth = 20
+		currenthealth = self.health
 
-			#grab size data
-			width, height = (self.screen.width-100,60)
+		#grab size data
+		width, height = (self.screen.width-100,60)
 
-			#calculate %
-			healthpart = currenthealth/maxhealth
+		#calculate %
+		healthpart = currenthealth/maxhealth
 
 
-			#apply % to size
-			if healthpart < 0:
-				healthpart = 0
-			width = width*healthpart
+		#apply % to size
+		if healthpart < 0:
+			healthpart = 0
+		width = width*healthpart
 
-			#change visual
-			self.healthbar.width = width
-			self.healthbar.anchor_x = width/2
+		#change visual
+		self.healthbar.width = width
+		self.healthbar.anchor_x = width/2
 
 	def update(self, dt):
 
 		
 		if self.health <= 0 and (not self.chase):
 			self.chase = True
+			self.spiky = True
 			clock.schedule_once(self.kill, 120)
 
 
@@ -1193,14 +1197,14 @@ class Kraken(Enemy):
 			if self.speed < 350:
 				self.speed += 0.3
 
-			if self.pos[1] > self.mapsize[1]*1.5:
+			if self.pos[1] > self.mapsize[1]*3:
 				x, y = self.pos
 				px, py = self.player.pos
 				cx, cy = self.camera.pos
 
-				y -= ((self.mapsize[1]*1.5)+self.camera.target[1])/self.camera.zoom - self.camera.target[1]
-				py -= ((self.mapsize[1]*1.5)+self.camera.target[1])/self.camera.zoom - self.camera.target[1]
-				cy += self.mapsize[1]*1.5
+				y -= ((self.mapsize[1]*3)+self.camera.target[1])/self.camera.zoom - self.camera.target[1]
+				py -= ((self.mapsize[1]*3)+self.camera.target[1])/self.camera.zoom - self.camera.target[1]
+				cy += self.mapsize[1]*3
 
 
 				self.pos = (x,y)
@@ -1208,7 +1212,11 @@ class Kraken(Enemy):
 				self.camera.pos = (cx,cy)
 
 
-		self.brain.switch()
+			elif self.pos[1] < (self.mapsize[1]*3) - 350:
+				self.brain.switch()
+
+		else:
+			self.brain.switch()
 		self.healthBar()
 		self.updatevisual(sprite = self.sprite)
 		self.sprite.anchor_x = self.sprite.width/2
@@ -1298,3 +1306,135 @@ class Kraken(Enemy):
 
 
 
+
+
+
+class ManOWar(Enemy):
+	def __init__(self, pos, speed, player, objects, mapsize, screen, handler, camera, batch, group, lasergroup, ui):
+		super().__init__((mapsize[0]/2, (mapsize[1]/2)-screen.height),(1800, 1500), shapes.Rectangle(*(mapsize[0]/2, mapsize[1]/2), *(1800, 1500), color=(0, 255, 255), batch=batch, group=group))
+		self.maxsize = (1800, 1500)
+		self.sprite.anchor_x = self.sprite.width/2
+		self.sprite.anchor_y = self.sprite.height/2
+
+		self.pos = pos
+		self.vel = (0,0)
+		self.turnspeed = 0.01
+		#self.size = (screen.width, 600)
+		#self.sprite = shapes.Rectangle(*pos, *(screen.width,600), color=(0, 255, 255), batch=batch, group=group)
+		self.speed = speed
+		self.player = player
+		self.objects = objects
+		self.mapsize = mapsize
+		self.screen = screen
+		self.handler = handler
+		self.camera = camera
+		self.batch = batch
+		self.group = group
+		self.ui = ui
+		self.lasergroup = lasergroup
+
+		self.alive = True
+
+		self.damage = 2
+
+		self.health = 50
+		self.hitcool = False
+
+		self.healthbar = shapes.Rectangle(x = screen.width/2, y = 50, width = screen.width-100, height = 30, color=(255, 0, 0), batch=batch, group=ui)
+		self.healthbar.anchor_x = screen.width/2
+		self.healthbar.x = screen.width/2
+
+		self.camera.targetZoom = 0.25
+		self.camera.player = self
+
+	def healthBar(self):
+		#Grab values
+		maxhealth = 50
+		currenthealth = self.health
+
+		#grab size data
+		width, height = (self.screen.width-100,60)
+
+		#calculate %
+		healthpart = currenthealth/maxhealth
+
+
+		#apply % to size
+		if healthpart < 0:
+			healthpart = 0
+		width = width*healthpart
+
+		#change visual
+		self.healthbar.width = width
+		self.healthbar.anchor_x = width/2
+
+
+	def update(self, dt):
+
+		if self.health <= 0:
+			self.alive = False
+
+
+
+
+		self.speed = 8 * (50 - self.health) + 100
+
+		x,y = self.pos
+		px, py = self.player.pos
+		dx,dy = self.vel
+
+		tdx, tdy = px - x, py - y
+	
+
+		dx += (tdx - dx) * self.turnspeed
+		dy += (tdy - dy) * self.turnspeed
+
+		speed = math.hypot(dx,dy)
+
+		dx /= speed
+		dy /= speed
+
+		x += dx * dt * self.speed
+		y += dy * dt * self.speed
+
+
+		self.pos = (x,y)
+		self.vel = (dx,dy)
+
+
+		self.healthBar()
+
+		scale = self.health/62.5 + 0.2
+		self.size = (self.maxsize[0] * scale, self.maxsize[1] * scale)
+
+		self.updatevisual(sprite = self.sprite)
+		self.sprite.anchor_x = self.sprite.width/2
+		self.sprite.anchor_y = self.sprite.height/2
+
+
+	def hitflip(self, dt):
+		self.hitcool = False
+
+	def hit(self, obj, dt):
+		if self.hitcool:
+			return
+
+		if (type(obj) == type(self.player)) and (obj.ram):
+			self.health -= obj.meleeDamage
+			self.hitcool = True
+			clock.schedule_once(self.hitflip, 0.5)
+
+	def delete(self):
+		self.camera.player = self.player
+		self.camera.targetZoom = 0.5
+
+		self.objects.add(collectibles.ArmourDrop(pos = self.pos, size = (40,40), camera = self.camera, batch = self.batch, group = self.group))
+		self.sprite.delete()
+		del self.sprite
+
+		try:
+			self.healthbar.delete()
+			del self.healthbar
+
+		except:
+			pass
