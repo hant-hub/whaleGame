@@ -7,7 +7,7 @@ import math
 from random import randint
 from res.util import visibleEntity, getClosestPointCircle, Hitbox
 from random import randint, random
-from res.Projectiles import ShootHarpoon, EnemyProjectile, ProgrammableProjectileFire, ShootBomb, Laser, PlayerProjectile, PlayerLaser, PlayerHarpoon, Bomb, Harpoon
+from res.Projectiles import ShootHarpoon, EnemyProjectile, ProgrammableProjectileFire, ShootBomb, Laser, PlayerProjectile, PlayerLaser, PlayerHarpoon, Bomb, Harpoon, ProgrammableProjectile
 from res.arena import Planet
 from res import BossAI, collectibles
 
@@ -1346,9 +1346,9 @@ class ManOWar(Enemy):
 		self.healthbar.x = screen.width/2
 
 		#self.camera.targetZoom = 0.25
-		self.camera.player = self
+		#self.camera.player = self
 
-		clock.schedule_interval(self.Turrets, 0.2)
+		clock.schedule_interval(self.deathWheel, 5)
 
 
 	def steamRoll(self, dt, *args):
@@ -1411,7 +1411,46 @@ class ManOWar(Enemy):
 		self.objects.add(Harpoon(pos = (x,y), size = (30,10), speed = 30, vel = (tx,ty), side = type(self), camera = self.camera, batch = self.batch, group = self.group))
 
 
-	
+	def deathWheel(self, dt, *args):
+
+		def Cycloid(time, args):
+
+			r = 80
+
+			dx = math.cos(time*4)*r
+			dy = math.sin(time*4)*r
+
+			dx += 50
+
+			return dx, dy
+
+
+		x, y = self.pos
+		px, py = self.player.pos
+
+		dx = px - x
+		dy = py - y
+
+		rotation = math.atan2(dy, dx)
+
+
+		n = 8
+		partition = math.pi/(2*n)
+		for i in range(n):
+			x = self.pos[0] + 320*math.sin(i*((2*math.pi)/n))
+			y = self.pos[1] - 320*math.cos(i*((2*math.pi)/n))
+
+			x -= self.pos[0]
+			y -= self.pos[1]
+
+			x, y = x*math.cos(rotation) - y*math.sin(rotation), y*math.cos(rotation) + x*math.sin(rotation)
+
+			x +=  self.pos[0]
+			y +=  self.pos[1]
+
+			self.objects.add(ProgrammableProjectile(pos = (x,y), size = (30,30), speed = 15, equation = Cycloid, rotation = math.degrees(rotation), offset = i*partition, side = type(self), camera = self.camera, batch = self.batch, group = self.group, duration = 5, args = None))
+
+
 
 
 
@@ -1493,11 +1532,11 @@ class ManOWar(Enemy):
 		self.size = (self.maxsize[0] * scale, self.maxsize[1] * scale)
 
 
-		if scale > 0.3:
-			self.BigMove(dt)
+		# if scale > 0.3:
+		# 	self.BigMove(dt)
 
-		else:
-			self.LittleMove(dt)
+		# else:
+		# 	self.LittleMove(dt)
 
 
 		self.healthBar()
@@ -1535,3 +1574,16 @@ class ManOWar(Enemy):
 
 		except:
 			pass
+
+
+
+
+class SpidermansBigWheel(Enemy):
+	pass
+
+class Mech(Enemy):
+	pass
+
+class Flock(Enemy):
+	pass
+
