@@ -7,7 +7,7 @@ import math
 from random import randint
 from res.util import visibleEntity, getClosestPointCircle, Hitbox
 from random import randint, random
-from res.Projectiles import ShootHarpoon, EnemyProjectile, ProgrammableProjectileFire, ShootBomb, Laser, PlayerProjectile, PlayerLaser, PlayerHarpoon, Bomb
+from res.Projectiles import ShootHarpoon, EnemyProjectile, ProgrammableProjectileFire, ShootBomb, Laser, PlayerProjectile, PlayerLaser, PlayerHarpoon, Bomb, Harpoon
 from res.arena import Planet
 from res import BossAI, collectibles
 
@@ -277,7 +277,7 @@ class FishingBoat(Enemy):
 	def fire(self, dt, objects):
 		"""calls projectile method to launch attack"""
 		if math.dist(self.pos, self.player.pos) < 400:
-			ShootHarpoon(me = self, other = self.player.pos, output = self.objects)
+			ShootHarpoon(me = self.pos, other = self.player.pos, output = self.objects)
 
 
 	def delete(self):
@@ -900,7 +900,7 @@ class Galleon(Enemy):
 		ProgrammableProjectileFire(me = body, other = body.player.pos, equation = sineShot, rotation = math.degrees(math.atan2(body.player.pos[1] - body.pos[1], body.player.pos[0] - body.pos[0])), output = body.objects, offset = math.pi/4)
 
 	def machinegunShot(_, dt, body):
-		ShootHarpoon(me = body, other = body.player.pos, output = body.objects)
+		ShootHarpoon(me = body.pos, other = body.player.pos, output = body.objects)
 
 
 
@@ -1334,6 +1334,7 @@ class ManOWar(Enemy):
 		self.lasergroup = lasergroup
 
 		self.alive = True
+		self.spiky = False
 
 		self.damage = 2
 
@@ -1344,8 +1345,75 @@ class ManOWar(Enemy):
 		self.healthbar.anchor_x = screen.width/2
 		self.healthbar.x = screen.width/2
 
-		self.camera.targetZoom = 0.25
+		#self.camera.targetZoom = 0.25
 		self.camera.player = self
+
+		clock.schedule_interval(self.Turrets, 0.2)
+
+
+	def steamRoll(self, dt, *args):
+		self.spiky = True
+
+		def flipSpike(dt, obj):
+			obj.spiky = False
+
+		clock.schedule_once(flipSpike, 10, self)
+
+
+	def MegaBomb(self, dt, *args):
+
+		num = 8
+
+		partition = (math.pi*2)/num
+
+		for x in range(num):
+			self.objects.add(Bomb(pos = self.pos, size = (100,100), speed = 13, fragNum = 6, objects = self.objects, vel = (math.cos(x*partition),math.sin(x*partition)), side = type(self), camera = self.camera, batch = self.batch, group = self.group))
+
+
+	def Turrets(self, dt, *args):
+		mx, my = self.pos
+		x, y = self.pos
+		sx, sy = self.size
+		px, py = self.player.pos
+
+		sx /= 2
+		sy /= 2
+
+		sx -= 20
+		sy -= 20
+
+		x = mx + sx
+		y = my + sy
+		tx = (px-x)/math.dist(self.player.pos,(x,y))
+		ty = (py-y)/math.dist(self.player.pos,(x,y))
+
+		self.objects.add(Harpoon(pos = (x,y), size = (30,10), speed = 30, vel = (tx,ty), side = type(self), camera = self.camera, batch = self.batch, group = self.group))
+
+		x = mx + sx
+		y = my - sy
+		tx = (px-x)/math.dist(self.player.pos, (x,y))
+		ty = (py-y)/math.dist(self.player.pos, (x,y))
+
+		self.objects.add(Harpoon(pos = (x,y), size = (30,10), speed = 30, vel = (tx,ty), side = type(self), camera = self.camera, batch = self.batch, group = self.group))
+
+		x = mx - sx
+		y = my + sy
+		tx = (px-x)/math.dist(self.player.pos, (x,y))
+		ty = (py-y)/math.dist(self.player.pos, (x,y))
+
+		self.objects.add(Harpoon(pos = (x,y), size = (30,10), speed = 30, vel = (tx,ty), side = type(self), camera = self.camera, batch = self.batch, group = self.group))
+
+		x = mx - sx
+		y = my - sy
+		tx = (px-x)/math.dist(self.player.pos, (x,y))
+		ty = (py-y)/math.dist(self.player.pos, (x,y))
+
+		self.objects.add(Harpoon(pos = (x,y), size = (30,10), speed = 30, vel = (tx,ty), side = type(self), camera = self.camera, batch = self.batch, group = self.group))
+
+
+	
+
+
 
 	def healthBar(self):
 		#Grab values
@@ -1368,17 +1436,7 @@ class ManOWar(Enemy):
 		self.healthbar.width = width
 		self.healthbar.anchor_x = width/2
 
-
-	def update(self, dt):
-
-		if self.health <= 0:
-			self.alive = False
-
-
-
-
-		self.speed = 8 * (50 - self.health) + 100
-
+	def BigMove(self, dt):
 		x,y = self.pos
 		px, py = self.player.pos
 		dx,dy = self.vel
@@ -1401,12 +1459,48 @@ class ManOWar(Enemy):
 		self.pos = (x,y)
 		self.vel = (dx,dy)
 
+	def LittleMove(self, dt):
+		x,y = self.pos
+		px, py = self.player.pos
+		dx,dy = self.vel
 
-		self.healthBar()
+		tdx, tdy = x - px, y - py
+	
 
+		dx += (tdx - dx) * self.turnspeed
+		dy += (tdy - dy) * self.turnspeed
+
+		speed = math.hypot(dx,dy)
+
+		dx /= speed
+		dy /= speed
+
+		x += dx * dt * self.speed
+		y += dy * dt * self.speed
+
+
+		self.pos = (x,y)
+		self.vel = (dx,dy)
+
+
+	def update(self, dt):
+
+		if self.health <= 0:
+			self.alive = False
+
+		self.speed = 8 * (50 - self.health) + 100
 		scale = self.health/62.5 + 0.2
 		self.size = (self.maxsize[0] * scale, self.maxsize[1] * scale)
 
+
+		if scale > 0.3:
+			self.BigMove(dt)
+
+		else:
+			self.LittleMove(dt)
+
+
+		self.healthBar()
 		self.updatevisual(sprite = self.sprite)
 		self.sprite.anchor_x = self.sprite.width/2
 		self.sprite.anchor_y = self.sprite.height/2
@@ -1423,6 +1517,9 @@ class ManOWar(Enemy):
 			self.health -= obj.meleeDamage
 			self.hitcool = True
 			clock.schedule_once(self.hitflip, 0.5)
+
+		if (self.health/62.5 + 0.2) < 0.5:
+			self.camera.targetZoom = 0.5
 
 	def delete(self):
 		self.camera.player = self.player

@@ -517,7 +517,7 @@ def ShootBomb(me, other, fragNum, output):
 def ShootHarpoon(me, other, output):
 	"""method for launching harpoon projectile"""
 	tx, ty = other
-	x, y = me.pos
+	x, y = pos
 
 
 	tx -= x
