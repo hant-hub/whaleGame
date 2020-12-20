@@ -1338,18 +1338,59 @@ class ManOWar(Enemy):
 
 		self.damage = 2
 
-		self.health = 50
+		self.health = 10
 		self.hitcool = False
 
 		self.healthbar = shapes.Rectangle(x = screen.width/2, y = 50, width = screen.width-100, height = 30, color=(255, 0, 0), batch=batch, group=ui)
 		self.healthbar.anchor_x = screen.width/2
 		self.healthbar.x = screen.width/2
 
-		#self.camera.targetZoom = 0.25
-		#self.camera.player = self
+		self.camera.targetZoom = 0.25
+		self.camera.player = self
 
-		clock.schedule_interval(self.deathWheel, 5)
+		self.brain = BossAI.AiBrain(self)
+		self.brain.addState(behavior = self.steamRoll, stateName = "steamroll", stateLength = 10, interval = 11)
+		self.brain.addState(behavior = self.MegaBomb, stateName = "megabomb", stateLength = 4, interval = 2)
+		self.brain.addState(behavior = self.Turrets, stateName = "turrets", stateLength = 5, interval = 0.2)
+		self.brain.addState(behavior = self.deathWheel, stateName = "deathwheel", stateLength = 6, interval = 2)
+		self.brain.addState(behavior = self.MidShot, stateName = "midshot", stateLength = 3, interval = 1)
+		self.brain.addState(behavior = self.weakShot, stateName = "weakShot", stateLength = 15, interval = 5)
+		self.brain.addState(behavior = self.idle, stateName = "idle", stateLength = 60, interval = 60)
 
+		self.brain.decision = ManOWar.decision
+
+	def StartStun(self):
+		pass
+	def EndStun(self, *args, **kwargs):
+		pass
+
+	def decision(body, history):
+		scale = body.health/62.5 + 0.2
+		
+
+
+		if scale > 0.6:
+			choice = randint(0, 3)
+
+			if choice == 0:
+				return "steamroll"
+			elif choice == 1:
+				return "megabomb"
+			elif choice == 2:
+				return "turrets"
+			else:
+				return "deathwheel"
+
+		elif scale > 0.4:
+			return "midshot"
+		elif scale > 0.3:
+			return "weakShot"
+
+		else:
+			return "idle"
+
+	def idle(Self, dt, *args):
+		pass
 
 	def steamRoll(self, dt, *args):
 		self.spiky = True
@@ -1451,7 +1492,29 @@ class ManOWar(Enemy):
 			self.objects.add(ProgrammableProjectile(pos = (x,y), size = (30,30), speed = 15, equation = Cycloid, rotation = math.degrees(rotation), offset = i*partition, side = type(self), camera = self.camera, batch = self.batch, group = self.group, duration = 5, args = None))
 
 
+	def weakShot(self, dt, *args):
+		tx, ty = self.player.pos
+		x, y = self.pos
 
+		tx -= x
+		ty -= y
+
+		tx /=math.dist(self.player.pos,self.pos)
+		ty /=math.dist(self.player.pos,self.pos)
+
+		self.objects.add(Harpoon(pos = self.pos, size = (60,20), speed = 15, vel = (tx,ty), side = type(self), camera = self.camera, batch = self.batch, group = self.group))
+
+	def MidShot(self, dt, *args):
+		tx, ty = self.player.pos
+		x, y = self.pos
+
+		tx -= x
+		ty -= y
+
+		tx /= math.dist(self.player.pos,self.pos)
+		ty /= math.dist(self.player.pos,self.pos)
+
+		self.objects.add(Harpoon(pos = self.pos, size = (120,40), speed = 30, vel = (tx, ty), side = type(self), camera = self.camera, batch = self.batch, group = self.group))
 
 
 	def healthBar(self):
@@ -1532,14 +1595,15 @@ class ManOWar(Enemy):
 		self.size = (self.maxsize[0] * scale, self.maxsize[1] * scale)
 
 
-		# if scale > 0.3:
-		# 	self.BigMove(dt)
+		if scale > 0.3:
+			self.BigMove(dt)
 
-		# else:
-		# 	self.LittleMove(dt)
+		else:
+			self.LittleMove(dt)
 
 
 		self.healthBar()
+		self.brain.switch()
 		self.updatevisual(sprite = self.sprite)
 		self.sprite.anchor_x = self.sprite.width/2
 		self.sprite.anchor_y = self.sprite.height/2
@@ -1552,12 +1616,22 @@ class ManOWar(Enemy):
 		if self.hitcool:
 			return
 
-		if (type(obj) == type(self.player)) and (obj.ram):
-			self.health -= obj.meleeDamage
-			self.hitcool = True
-			clock.schedule_once(self.hitflip, 0.5)
+		elif (isinstance(obj, Hitbox)):
+			obj.enemyEffect(self)
 
-		if (self.health/62.5 + 0.2) < 0.5:
+		elif (isinstance(obj, PlayerProjectile)):
+			self.health -= obj.damage
+			self.hitcool = True
+			self.speed = 3
+			clock.schedule_once(self.hitflip, 1.5)
+
+		elif (type(obj) == type(self.player)) and (obj.ram):
+			self.health -= obj.meleeDamage
+			self.speed = 3
+			self.hitcool = True
+			clock.schedule_once(self.hitflip, 1.5)
+
+		if (self.health/62.5 + 0.2) < 0.55:
 			self.camera.targetZoom = 0.5
 
 	def delete(self):
@@ -1576,14 +1650,14 @@ class ManOWar(Enemy):
 			pass
 
 
+class Flock(Enemy):
+	pass
 
-
-class SpidermansBigWheel(Enemy):
+class BigWheel(Enemy):
 	pass
 
 class Mech(Enemy):
 	pass
 
-class Flock(Enemy):
-	pass
+
 
