@@ -1650,7 +1650,236 @@ class ManOWar(Enemy):
 			pass
 
 
-class Flock(Enemy):
+
+class Drone(Enemy):
+	
+	def __init__(self, pos, speed, player, mapsize, objects, handler, camera, batch, group):
+		super().__init__(pos,(100,100), shapes.Rectangle(*pos, *(100,100), color=(0, 255, 255), batch=batch, group=group))
+		self.sprite.anchor_x = (self.sprite.width/2)
+		self.sprite.anchor_y = (self.sprite.height/2)
+
+
+		self.batch = batch
+		self.group = group
+		self.mapsize = mapsize
+
+
+		self.vel = (1,1)
+		
+		self.speed = speed
+		self.handler = handler
+		self.damage = 5
+		self.turnspeed = 0.02
+
+		self.sight = randint(300,600)
+		self.personal_space = randint(200,300)
+
+		self.camera = camera
+
+		self.player = player
+
+		self.objects = objects
+
+		self.stun = False
+
+
+		#death flag
+		self.alive = True
+
+	# def EndStun(self, dt):
+	# 	self.stun = False
+
+	# def StartStun(self):
+	# 	self.stun = True
+
+	def avoid_other(self):
+		forcex = 0
+		forcey = 0
+		sx, sy = self.pos
+		
+
+		for boid in [obj for obj in self.objects if (type(obj) == type(self))]:
+	
+			if math.dist(self.pos,boid.pos) < self.personal_space:
+				
+				bx, by = boid.pos
+
+
+				forcex += sx - bx
+				forcey += sy - by
+		
+		dx, dy = self.vel
+
+
+		dx += forcex*0.1
+		dy += forcey*0.1
+
+		self.vel = (dx,dy)
+
+	def speed_limit(self):
+		dx, dy = self.vel
+		speed = math.hypot(*self.vel)
+
+		if speed > 1000:
+			dx /= speed
+			dy /= speed
+
+			dx *= 1000
+			dy *= 1000
+
+		self.vel = (dx,dy)
+
+	def seek_center(self):
+		mx, my = self.mapsize
+		centerx = mx/2
+		centery = my/2
+
+		dx, dy = self.vel
+		x, y = self.pos
+
+
+		dx += (centerx - x) * 0.1
+		dy += (centery - y) * 0.1
+
+		self.vel = (dx,dy)
+
+	def avoid_center(self):
+		centerx = 0
+		centery = 0
+		num = 0
+
+		for boid in [obj for obj in self.objects if (type(obj) == type(self))]:
+
+			
+			x, y = boid.pos
+
+			centerx += x
+			centery += y
+
+			num += 1
+
+		if num != 0:
+			dx, dy = self.vel
+			x, y = self.pos
+
+			centerx = centerx/num
+			centery = centery/num
+
+
+
+			dx -= (centerx - x) * 0.05
+			dy -= (centery - y) * 0.05
+
+			self.vel = (dx,dy)
+
+
+	def edge_check(self):
+		x, y = self.pos
+		dx, dy = self.vel
+		mx, my = self.mapsize
+
+		if x < 200:
+			dx += 10
+		if x > mx-200:
+			dx -= 10
+		if y < 200:
+			dy += 10
+		if y > my-200:
+			dy -= 10
+
+		
+
+		self.pos = (x,y)
+		self.vel = (dx,dy)
+
+	def align_vel(self):
+		averagex = 0
+		averagey = 0
+		num = 0
+
+		for boid in [obj for obj in self.objects if (type(obj) == type(self))]:
+
+			if math.dist(self.pos, boid.pos) > self.sight:
+				dx, dy = boid.vel
+
+				averagex += dx
+				averagey += dy
+
+				num += 1
+
+		if num != 0:
+			averagex /= num
+			averagey /= num
+
+			dx, dy = self.vel
+
+			dx += (averagex - dx) * 0.03
+			dy += (averagey - dy) * 0.03
+
+			self.vel = (dx,dy)
+
+
+	def random_vel(self):
+
+		dx, dy = self.vel
+
+		dx += random() * 100
+		dy += random() * 100
+
+
+		self.vel = (dx,dy)
+
+
+
+
+
+	def update(self, dt):
+		"""Updates pos and velocityof enemy"""
+
+		#anti-overlap
+		self.avoid_other()
+		self.speed_limit()
+		self.align_vel()
+		self.seek_center()
+		self.avoid_center()
+		self.edge_check()
+		self.random_vel()
+
+
+		#pathfinding
+		x, y = self.pos
+		dx, dy = self.vel
+
+		# if not self.stun:
+		# 	x,y, dx,dy = Enemy.AgresiveMovement(pos = (x,y), vel = (dx,dy), speed = self.speed, turnspeed = self.turnspeed, target = target, dt = dt)
+		# else:
+
+
+		x += dx * dt * self.speed
+		y += dy * dt * self.speed
+		
+
+		self.updatevisual(sprite = self.sprite, rotation = math.degrees( -math.atan2(*self.vel)  ))
+		self.sprite.anchor_x = (self.sprite.width/2)
+		self.sprite.anchor_y = (self.sprite.height/2)
+
+		self.pos = (x,y)
+		self.vel = (dx,dy)
+
+
+
+	def delete(self):
+		self.objects.add(collectibles.ArmourDrop(pos = self.pos, size = (40,40), camera = self.camera, batch = self.batch, group = self.group))
+		self.sprite.delete()
+		del self.sprite
+
+
+	def hit(self, obj, dt):
+		"""handles collision behavior"""
+
+		pass
+
+class Flock:
 	pass
 
 class BigWheel(Enemy):

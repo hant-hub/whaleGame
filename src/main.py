@@ -92,7 +92,8 @@ def main():
 	#objects.add(enemies.Whaler(pos = (0,0), speed = 1, player = player, objects = objects, mapsize = mapsize, handler = handler, camera = camera, batch = batch, group = foreground, laserGroup = foregroundl))
 	#objects.add(collectibles.HealthPack(health = 1000, pos = (500,500), size = (50,50), camera = camera, batch = batch, group = foreground))
 	#objects.add(collectibles.DamageBooster(pos = (500,500), size = (75,75), camera = camera, batch=batch, group=foreground))
-	objects.add(enemies.ManOWar(pos = (0, -450), speed = 10, player = player, objects = objects, mapsize = mapsize, screen = screen, handler = handler, camera = camera, batch = batch, group = foreground, lasergroup = foregroundl, ui = ui))
+	for x in range(40):
+		objects.add(enemies.Drone(pos = (0,0), speed = 1, player = player, mapsize = mapsize, objects = objects, handler = handler, camera = camera, batch = batch, group = foreground))
 	
 
 	def setup():
