@@ -22,8 +22,8 @@ class PlayerProjectile(visibleEntity):
 class Harpoon(EnemyProjectile):
 	"""Basic projectile for Enemies"""
 
-	def __init__(self, pos, size, speed, vel, side, camera, batch, group):
-		super().__init__(pos,size, shapes.Rectangle(*pos, *size, color=(255, 255, 255), batch=batch, group=group))
+	def __init__(self, pos, size, speed, vel, side, camera, sprite, batch, group):
+		super().__init__(pos,size, sprite)
 		dx, dy = vel
 
 		self.sprite.anchor_x = (self.sprite.width/2)
@@ -49,7 +49,7 @@ class Harpoon(EnemyProjectile):
 		#death flag
 		self.alive = True
 
-		self.updatevisual(sprite = self.sprite)
+		self.updatevisual(image = self.sprite)
 
 
 		clock.schedule_once(self.kill, 3)
@@ -67,7 +67,7 @@ class Harpoon(EnemyProjectile):
 		x += dx * self.speed
 		y += dy * self.speed
 
-		self.updatevisual(sprite = self.sprite)
+		self.updatevisual(image = self.sprite)
 		self.sprite.anchor_x = (self.sprite.width/2)
 		self.sprite.anchor_y = (self.sprite.height/2)
 
@@ -123,7 +123,7 @@ class PlayerHarpoon(PlayerProjectile):
 		#death flag
 		self.alive = True
 
-		self.updatevisual(sprite = self.sprite)
+		self.updatevisual(image = self.sprite)
 
 
 		clock.schedule_once(self.kill, 4)
@@ -141,7 +141,7 @@ class PlayerHarpoon(PlayerProjectile):
 		x += dx * self.speed
 		y += dy * self.speed
 
-		self.updatevisual(sprite = self.sprite)
+		self.updatevisual(image = self.sprite)
 		self.sprite.anchor_x = (self.sprite.width/2)
 		self.sprite.anchor_y = (self.sprite.height/2)
 
@@ -197,7 +197,7 @@ class ProgrammableProjectile(EnemyProjectile):
 		#death flag
 		self.alive = True
 
-		self.updatevisual(sprite = self.sprite)
+		self.updatevisual(image = self.sprite)
 
 
 		clock.schedule_once(self.kill, duration)
@@ -218,7 +218,7 @@ class ProgrammableProjectile(EnemyProjectile):
 		x += dx * self.speed * dt
 		y += dy * self.speed * dt
 
-		self.updatevisual(sprite = self.sprite, rotation = math.degrees( -math.atan2(0,1)  ))
+		self.updatevisual(image = self.sprite, rotation = math.degrees( -math.atan2(0,1)  ))
 		self.sprite.anchor_x = (self.sprite.width/2)
 		self.sprite.anchor_y = (self.sprite.height/2)
 
@@ -280,7 +280,7 @@ class PlayerSmartProjectile(PlayerProjectile):
 
 		self.enemy = enemy
 
-		self.updatevisual(sprite = self.sprite)
+		self.updatevisual(image = self.sprite)
 
 
 		clock.schedule_once(self.kill, 10)
@@ -301,7 +301,7 @@ class PlayerSmartProjectile(PlayerProjectile):
 		x += dx * self.speed * dt
 		y += dy * self.speed * dt
 
-		self.updatevisual(sprite = self.sprite, rotation = math.degrees( -math.atan2(0,1)  ))
+		self.updatevisual(image = self.sprite, rotation = math.degrees( -math.atan2(0,1)  ))
 		self.sprite.anchor_x = (self.sprite.width/2)
 		self.sprite.anchor_y = (self.sprite.height/2)
 
@@ -357,7 +357,7 @@ class Bomb(EnemyProjectile):
 		#death flag
 		self.alive = True
 
-		self.updatevisual(sprite = self.sprite)
+		self.updatevisual(image = self.sprite)
 
 
 		clock.schedule_once(self.kill, 2)
@@ -372,7 +372,7 @@ class Bomb(EnemyProjectile):
 		x += dx * self.speed
 		y += dy * self.speed
 
-		self.updatevisual(sprite = self.sprite)
+		self.updatevisual(image = self.sprite)
 		self.sprite.anchor_x = (self.sprite.width/2)
 		self.sprite.anchor_y = (self.sprite.height/2)
 
@@ -404,7 +404,7 @@ class Bomb(EnemyProjectile):
 			angle = partition*x
 			angle = math.radians(angle)
 			
-			self.objects.add(Harpoon(pos = self.pos, size = (30,10), speed = 15, vel = (math.cos(angle),math.sin(angle)), side = type(self), camera = self.camera, batch = self.batch, group = self.group))
+			self.objects.add(Harpoon(pos = self.pos, size = (30,10), speed = 15, vel = (math.cos(angle),math.sin(angle)), side = type(self), camera = self.camera, sprite = shapes.Rectangle(*self.pos, *(30,10), color=(255, 0, 0), batch=self.batch, group=self.group), batch = self.batch, group = self.group))
 			
 		self.alive = False
 
@@ -435,11 +435,11 @@ class Laser(EnemyProjectile):
 		#death flag
 		self.alive = True
 
-		self.updatevisual(sprite = self.sprite)
+		self.updatevisual(image = self.sprite)
 		clock.schedule_once(self.kill, duration)
 
 	def update(self, dt):	
-		self.updatevisual(sprite = self.sprite)
+		self.updatevisual(image = self.sprite)
 		self.sprite.anchor_x = 0
 		self.sprite.anchor_y = self.sprite.height/2
 
@@ -476,11 +476,11 @@ class PlayerLaser(PlayerProjectile):
 		#death flag
 		self.alive = True
 
-		self.updatevisual(sprite = self.sprite)
+		self.updatevisual(image = self.sprite)
 		clock.schedule_once(self.kill, duration)
 
 	def update(self, dt):	
-		self.updatevisual(sprite = self.sprite)
+		self.updatevisual(image = self.sprite)
 		self.sprite.anchor_x = 0
 		self.sprite.anchor_y = self.sprite.height/2
 
@@ -514,7 +514,7 @@ def ShootBomb(me, other, fragNum, output):
 
 
 
-def ShootHarpoon(me, other, output):
+def ShootHarpoon(me, other, output, sprite = None):
 	"""method for launching harpoon projectile"""
 	tx, ty = other
 	x, y = me.pos
@@ -526,5 +526,8 @@ def ShootHarpoon(me, other, output):
 	tx /= math.dist(other, me.pos)
 	ty /= math.dist(other, me.pos)
 
+	if sprite == None:
+		sprite = shapes.Rectangle(*me.pos, *(30,10), color=(255, 255, 255), batch = me.batch, group = me.group)
 
-	output.add(Harpoon(pos = me.pos, size = (30,10), speed = 15, vel = (tx,ty), side = type(me), camera = me.camera, batch = me.batch, group = me.group))
+
+	output.add(Harpoon(pos = me.pos, size = (30,10), speed = 15, vel = (tx,ty), side = type(me), camera = me.camera, sprite = sprite, batch = me.batch, group = me.group))

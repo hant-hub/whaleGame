@@ -1,5 +1,6 @@
 from pyglet import *
 from res import whalestuff, util
+from random import choice, randint
 
 
 
@@ -19,7 +20,7 @@ class HealthPack(util.visibleEntity):
 
 
 	def update(self, dt):
-		self.updatevisual(sprite = self.sprite)
+		self.updatevisual(image = self.sprite)
 		self.sprite.anchor_x = self.sprite.width/2
 		self.sprite.anchor_y = self.sprite.height/2
 
@@ -40,8 +41,10 @@ class HealthPack(util.visibleEntity):
 
 class SquidPowerup(util.visibleEntity):
 
-	def __init__(self, pos, size, color, camera, batch, group):
-		super().__init__(pos,size, shapes.Rectangle(*pos, *size, color=color, batch=batch, group = group))
+	def __init__(self, pos, size, color, camera, batch, group, sprite = None):
+		if sprite == None:
+			sprite = shapes.Rectangle(*pos, *size, color=color, batch=batch, group = group)
+		super().__init__(pos,size, sprite)
 		self.sprite.anchor_x = self.sprite.width/2
 		self.sprite.anchor_y = self.sprite.height/2
 		self.camera = camera
@@ -50,7 +53,7 @@ class SquidPowerup(util.visibleEntity):
 
 
 	def update(self, dt):
-		self.updatevisual(sprite = self.sprite)
+		self.updatevisual(image = self.sprite)
 		self.sprite.anchor_x = self.sprite.width/2
 		self.sprite.anchor_y = self.sprite.height/2
 
@@ -121,14 +124,19 @@ class DamageBooster(SquidPowerup):
 
 
 class ArmourDrop(SquidPowerup):
+
+	sprites = None
+
 	def __init__(self, pos, size, camera, batch, group):
-		super().__init__(pos, size, (100,100,100), camera, batch, group)
+		super().__init__(pos, size, (100,100,100), camera, batch, group, sprite = sprite.Sprite(choice(ArmourDrop.sprites), batch = batch, group = group))
+		self.sprite.rotation = randint(0,359)
 
 
 	def hit(self, obj, dt):
 		if isinstance(obj, whalestuff.Player):
 			self.alive = False
-			obj.armour += 5
+			if obj.armour <= 50:
+				obj.armour += 5
 
 
 		else:

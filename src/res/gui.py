@@ -1,6 +1,7 @@
 """logic and behavior for GUI elements"""
 
 from pyglet import *
+from res import PlayerAbilities
 
 
 
@@ -9,25 +10,36 @@ from pyglet import *
 class GUI:
 	"""main interface for GUI"""
 
-	def __init__(self, pos, player, window, batch, group):
+	def __init__(self, pos, player, window, sprites, batch, group):
 		self.pos = pos
 		self.player = player
 
+		self.bottomlevel = graphics.OrderedGroup(0, parent = group)
+		self.toplevel = graphics.OrderedGroup(1, parent = group)
+		
+
 
 		#create healthbar
-		self.healthbar = shapes.Rectangle(*(30, window.height - 60), *(400, 40), color=(255, 0, 0), batch=batch, group=group)
+		self.healthdecor = sprite.Sprite(sprites[(1,0)], *(10, window.height - 70), batch = batch, group = self.toplevel)
+		self.healthdecor.scale = 0.5
+		self.healthbar = shapes.BorderedRectangle(*(50, window.height - 60), *(400, 40), border = 10, color=(255, 0, 0), border_color =(0, 0, 0),  batch=batch, group=self.bottomlevel)
 
 		#create armourbar
-		self.armourbar = shapes.Rectangle(*(30, window.height - 110), *(400, 40), color=(100,100,100), batch=batch, group=group)
+		self.armourdecor = sprite.Sprite(sprites[(1,1)], *(10, window.height - 142), batch = batch, group = self.toplevel)
+		self.armourdecor.scale = 0.5
+		self.armourbar = shapes.BorderedRectangle(*(50, window.height - 130), *(400, 40), border = 10, color=(100,100,100), border_color =(0, 0, 0), batch=batch, group=self.bottomlevel)
 
 		#create Primary Ability indicator
-		self.tail = shapes.Rectangle(*(30, window.height - 180), *(25,50), color = (255,0,0), batch = batch, group = group)
+		self.tail = sprite.Sprite(player.abilityIndicatorOne, *(30, window.height - 210), batch = batch, group = self.bottomlevel)
+		self.tail.scale = 0.5
 
 		#create Secondary Ability Indicator
-		self.laser = shapes.Rectangle(*(70, window.height - 180), *(25,50), color = (255,0,0), batch = batch, group = group)
+		self.laser = sprite.Sprite(player.abilityIndicatorTwo, *(110, window.height - 210), batch = batch, group = self.bottomlevel)
+		self.laser.scale = 0.5
 
 		#create Tertiatry Abilty Indicator
-		self.third = shapes.Rectangle(*(110, window.height - 180), *(25,50), color = (255,0,0), batch = batch, group = group)
+		self.third = sprite.Sprite(player.abilityIndicatorThree, *(190, window.height - 210), batch = batch, group = self.bottomlevel)
+		self.third.scale = 0.5
 
 	def update(self, dt):
 		self.HealthBar()

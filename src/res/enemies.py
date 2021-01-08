@@ -4,7 +4,7 @@
 
 from pyglet import *
 import math
-from random import randint
+from random import randint, choice
 from res.util import visibleEntity, getClosestPointCircle, Hitbox
 from random import randint, random
 from res.Projectiles import ShootHarpoon, EnemyProjectile, ProgrammableProjectileFire, ShootBomb, Laser, PlayerProjectile, PlayerLaser, PlayerHarpoon, Bomb, Harpoon, ProgrammableProjectile
@@ -202,6 +202,12 @@ class FishingBoat(Enemy):
 	health = low
 	"""
 
+
+
+	HarpoonSprite = None
+
+
+
 	def __init__(self, pos, speed, player, objects, handler, camera, batch, group):
 		super().__init__(pos,(50,25), shapes.Rectangle(*pos, *(50,25), color=(0, 255, 255), batch=batch, group=group))
 		self.sprite.anchor_x = (self.sprite.width/2)
@@ -235,9 +241,11 @@ class FishingBoat(Enemy):
 
 	def EndStun(self, dt):
 		self.stun = False
-
+		
 	def StartStun(self):
 		self.stun = True
+		clock.schedule_once(self.EndStun, 0.5)
+
 
 	def setupFire(self, dt):
 		"""offsets the firing cycle so every enemy isn't in sync with each other"""
@@ -263,9 +271,11 @@ class FishingBoat(Enemy):
 		else:
 			x += dx * dt * self.speed * 10
 			y += dy * dt * self.speed * 10
+
+		rotation = -math.degrees(math.atan2(dy, dx))
 		
 
-		self.updatevisual(sprite = self.sprite)
+		self.updatevisual(image = self.sprite, rotation = rotation)
 		self.sprite.anchor_x = (self.sprite.width/2)
 		self.sprite.anchor_y = (self.sprite.height/2)
 
@@ -277,7 +287,7 @@ class FishingBoat(Enemy):
 	def fire(self, dt, objects):
 		"""calls projectile method to launch attack"""
 		if math.dist(self.pos, self.player.pos) < 400:
-			ShootHarpoon(me = self.pos, other = self.player.pos, output = self.objects)
+			ShootHarpoon(me = self, other = self.player.pos, output = self.objects, sprite = sprite.Sprite(FishingBoat.HarpoonSprite, *self.pos, batch = self.batch, group = self.group))
 
 
 	def delete(self):
@@ -366,9 +376,11 @@ class Galley(Enemy):
 
 	def EndStun(self, dt):
 		self.stun = False
+		
 
 	def StartStun(self):
 		self.stun = True
+		clock.schedule_once(self.EndStun, 0.5)
 
 	def setupFire(self, dt):
 		clock.schedule_interval(self.fire, 5)
@@ -422,7 +434,7 @@ class Galley(Enemy):
 
 		
 
-		self.updatevisual(sprite = self.sprite)	
+		self.updatevisual(image = self.sprite)	
 		self.sprite.anchor_x = (self.sprite.width/2)
 		self.sprite.anchor_y = (self.sprite.height/2)
 
@@ -504,9 +516,11 @@ class Frigate(Enemy):
 
 	def EndStun(self, dt):
 		self.stun = False
+		
 
 	def StartStun(self):
 		self.stun = True
+		clock.schedule_once(self.EndStun, 0.5)
 
 
 	def update(self, dt):
@@ -536,7 +550,7 @@ class Frigate(Enemy):
 			y += dy * dt * self.speed * 10
 		
 
-		self.updatevisual(sprite = self.sprite)
+		self.updatevisual(image = self.sprite)
 		self.sprite.anchor_x = (self.sprite.width/2)
 		self.sprite.anchor_y = (self.sprite.height/2)
 
@@ -640,9 +654,11 @@ class Whaler(Enemy):
 
 	def EndStun(self, dt):
 		self.stun = False
+		
 
 	def StartStun(self):
 		self.stun = True
+		clock.schedule_once(self.EndStun, 0.5)
 		self.resetFire(0)
 
 	def laserSight(self):
@@ -705,7 +721,7 @@ class Whaler(Enemy):
 		dx, dy = self.vel
 		target = self.player.pos
 
-		self.updatevisual(sprite = self.sprite)
+		self.updatevisual(image = self.sprite)
 		self.sprite.anchor_x = (self.sprite.width/2)
 		self.sprite.anchor_y = (self.sprite.height/2)
 
@@ -900,7 +916,7 @@ class Galleon(Enemy):
 		ProgrammableProjectileFire(me = body, other = body.player.pos, equation = sineShot, rotation = math.degrees(math.atan2(body.player.pos[1] - body.pos[1], body.player.pos[0] - body.pos[0])), output = body.objects, offset = math.pi/4)
 
 	def machinegunShot(_, dt, body):
-		ShootHarpoon(me = body.pos, other = body.player.pos, output = body.objects)
+		ShootHarpoon(me = body, other = body.player.pos, output = body.objects)
 
 
 
@@ -919,7 +935,7 @@ class Galleon(Enemy):
 		self.vel = (dx,dy)
 
 
-		self.updatevisual(sprite = self.sprite)
+		self.updatevisual(image = self.sprite)
 		self.sprite.anchor_x = (self.sprite.width/2)
 		self.sprite.anchor_y = (self.sprite.height/2)
 
@@ -1218,7 +1234,7 @@ class Kraken(Enemy):
 		else:
 			self.brain.switch()
 		self.healthBar()
-		self.updatevisual(sprite = self.sprite)
+		self.updatevisual(image = self.sprite)
 		self.sprite.anchor_x = self.sprite.width/2
 		self.sprite.anchor_y = self.sprite.height/2
 
@@ -1604,7 +1620,7 @@ class ManOWar(Enemy):
 
 		self.healthBar()
 		self.brain.switch()
-		self.updatevisual(sprite = self.sprite)
+		self.updatevisual(image = self.sprite)
 		self.sprite.anchor_x = self.sprite.width/2
 		self.sprite.anchor_y = self.sprite.height/2
 
@@ -1653,7 +1669,7 @@ class ManOWar(Enemy):
 
 class Drone(Enemy):
 	
-	def __init__(self, pos, speed, player, mapsize, objects, handler, camera, batch, group):
+	def __init__(self, pos, speed, player, mapsize, objects, fellows, handler, camera, batch, group):
 		super().__init__(pos,(100,100), shapes.Rectangle(*pos, *(100,100), color=(0, 255, 255), batch=batch, group=group))
 		self.sprite.anchor_x = (self.sprite.width/2)
 		self.sprite.anchor_y = (self.sprite.height/2)
@@ -1669,28 +1685,46 @@ class Drone(Enemy):
 		self.speed = speed
 		self.handler = handler
 		self.damage = 5
+		self.health = 100
 		self.turnspeed = 0.02
 
 		self.sight = randint(300,600)
 		self.personal_space = randint(200,300)
+		self.fellows = fellows
 
 		self.camera = camera
 
 		self.player = player
+		
+		self.target = (mapsize[0]/2, mapsize[1]/2)
 
 		self.objects = objects
+		self.rotatePercent = 0
+		self.repulsion = 0.05
 
 		self.stun = False
+
+		self.spiky = True
 
 
 		#death flag
 		self.alive = True
 
-	# def EndStun(self, dt):
-	# 	self.stun = False
+	def EndStun(self, dt):
+		self.stun = False
+		self.spiky = True
 
-	# def StartStun(self):
-	# 	self.stun = True
+
+	def StartStun(self):
+		self.stun = True
+		self.spiky = False
+
+		angle = random() * math.pi * 2
+
+		self.vel = (math.cos(angle) * 1000, math.sin(angle) * 1000)
+
+
+		clock.schedule_once(self.EndStun, 5)
 
 	def avoid_other(self):
 		forcex = 0
@@ -1698,7 +1732,7 @@ class Drone(Enemy):
 		sx, sy = self.pos
 		
 
-		for boid in [obj for obj in self.objects if (type(obj) == type(self))]:
+		for boid in [obj for obj in self.fellows if (type(obj) == type(self))]:
 	
 			if math.dist(self.pos,boid.pos) < self.personal_space:
 				
@@ -1711,8 +1745,8 @@ class Drone(Enemy):
 		dx, dy = self.vel
 
 
-		dx += forcex*0.1
-		dy += forcey*0.1
+		dx += forcex*0.05
+		dy += forcey*0.05
 
 		self.vel = (dx,dy)
 
@@ -1730,9 +1764,7 @@ class Drone(Enemy):
 		self.vel = (dx,dy)
 
 	def seek_center(self):
-		mx, my = self.mapsize
-		centerx = mx/2
-		centery = my/2
+		centerx, centery = self.target
 
 		dx, dy = self.vel
 		x, y = self.pos
@@ -1748,7 +1780,7 @@ class Drone(Enemy):
 		centery = 0
 		num = 0
 
-		for boid in [obj for obj in self.objects if (type(obj) == type(self))]:
+		for boid in [obj for obj in self.fellows if (type(obj) == type(self))]:
 
 			
 			x, y = boid.pos
@@ -1767,8 +1799,8 @@ class Drone(Enemy):
 
 
 
-			dx -= (centerx - x) * 0.05
-			dy -= (centery - y) * 0.05
+			dx -= (centerx - x) * self.repulsion
+			dy -= (centery - y) * self.repulsion
 
 			self.vel = (dx,dy)
 
@@ -1797,7 +1829,7 @@ class Drone(Enemy):
 		averagey = 0
 		num = 0
 
-		for boid in [obj for obj in self.objects if (type(obj) == type(self))]:
+		for boid in [obj for obj in self.fellows if (type(obj) == type(self))]:
 
 			if math.dist(self.pos, boid.pos) > self.sight:
 				dx, dy = boid.vel
@@ -1829,37 +1861,68 @@ class Drone(Enemy):
 
 		self.vel = (dx,dy)
 
+	def rotate(self):
+		cx, cy = self.target
+		x, y = self.pos
+		dx, dy = self.vel
 
+		cx -= x
+		cy -= y
+
+		tx = -cy
+		ty = cx
+		
+
+
+		dx += ((tx)-dx)* self.rotatePercent
+		dy += ((ty)-dy)* self.rotatePercent
+
+		self.vel = (dx,dy)
 
 
 
 	def update(self, dt):
-		"""Updates pos and velocityof enemy"""
+		"""Updates pos and velocity of enemy"""
 
 		#anti-overlap
-		self.avoid_other()
-		self.speed_limit()
-		self.align_vel()
-		self.seek_center()
-		self.avoid_center()
-		self.edge_check()
-		self.random_vel()
+		if not self.stun:
+			self.avoid_other()
+			self.speed_limit()
+			self.align_vel()
+			self.seek_center()
+			self.avoid_center()
+			self.edge_check()
+			self.random_vel()
+			self.rotate()
 
 
 		#pathfinding
 		x, y = self.pos
 		dx, dy = self.vel
-
-		# if not self.stun:
-		# 	x,y, dx,dy = Enemy.AgresiveMovement(pos = (x,y), vel = (dx,dy), speed = self.speed, turnspeed = self.turnspeed, target = target, dt = dt)
-		# else:
-
+		
 
 		x += dx * dt * self.speed
 		y += dy * dt * self.speed
+
+
+		if self.stun:
+			mx, my = self.mapsize
+
+			if (x >= mx) or (x <= 0):
+				dx *= -1
+
+			if (y >= my) or (y <= 0):
+				dy *= -1
+
+
+			dx *= 0.99
+			dy *= 0.99
+
+
+			
 		
 
-		self.updatevisual(sprite = self.sprite, rotation = math.degrees( -math.atan2(*self.vel)  ))
+		self.updatevisual(image = self.sprite, rotation = math.degrees( -math.atan2(*self.vel)  ))
 		self.sprite.anchor_x = (self.sprite.width/2)
 		self.sprite.anchor_y = (self.sprite.height/2)
 
@@ -1869,18 +1932,205 @@ class Drone(Enemy):
 
 
 	def delete(self):
-		self.objects.add(collectibles.ArmourDrop(pos = self.pos, size = (40,40), camera = self.camera, batch = self.batch, group = self.group))
+		if randint(0,2):
+			self.objects.add(collectibles.ArmourDrop(pos = self.pos, size = (40,40), camera = self.camera, batch = self.batch, group = self.group))
 		self.sprite.delete()
 		del self.sprite
+
+	def hitflip(self, dt):
+		pass
+
 
 
 	def hit(self, obj, dt):
 		"""handles collision behavior"""
 
-		pass
+		if (isinstance(obj, Hitbox)):
+			self.StartStun()
+
+		if self.spiky:
+			return
+
+
+		if (type(obj) == type(self.player)) and (obj.ram):
+			self.alive = False
+
+
+
+
 
 class Flock:
-	pass
+	
+
+	def __init__(self, player, mapsize, objects, handler, camera, batch, group):
+
+		self.player = player
+		self.mapsize = mapsize
+		self.objects = objects
+		self.handler = handler
+		self.camera = camera
+		self.batch = batch
+		self.group = group
+		self.alive = True
+
+		self.squads = {}
+
+		self.target = (mapsize[0]/2, mapsize[1]/2)
+
+		self.pos = self.target
+
+		#create Swarm
+
+		self.drones = set()
+
+		for _ in range(30):
+			self.drones.add(Drone(pos = (0,0), speed = 1, player = player, mapsize = mapsize, objects = objects, fellows = self.drones, handler = handler, camera = camera, batch = batch, group = group))
+
+		self.objects.update(self.drones)
+
+
+		self.camera.player = self
+		self.camera.targetZoom = 0.25
+
+		#clock.schedule_interval(self.TriSplit, 15)
+		#clock.schedule_interval(self.tornado, 10)
+		clock.schedule_interval(self.Explode, 10)
+
+		
+
+	def stunned(self, dt):
+
+		for drone in self.drones:
+			drone.StartStun()
+
+
+	def TriSplit(self, dt, *args):
+		length = len(self.drones)/3
+
+		length = int(length)
+
+		squad1 = set()
+		squad2 = set()
+		squad3 = set()
+
+		for _ in range(1, length):
+			squad1.add(self.drones.pop())
+
+		for _ in range(1, length):
+			squad2.add(self.drones.pop())
+
+		squad3 = self.drones - (squad1|squad2)
+
+		self.squads["one"] = squad1
+		self.squads["two"] = squad2
+		self.squads["three"] = squad3
+
+		for squad in self.squads:
+			for drone in self.squads[squad]:
+				drone.fellows = self.squads[squad]
+
+
+		def tricycle(dt, body):
+			squad1 = body.squads["one"]
+			squad2 = body.squads["two"]
+			squad3 = body.squads["three"]
+
+			for drone in squad3:
+				drone.target = (body.mapsize[0]/2, body.mapsize[1]/2)
+				drone.speed = 1
+
+			for drone in squad1:
+				drone.target = body.player.pos
+				drone.speed = 2
+
+			body.squads["three"] = squad1
+			body.squads["one"] = squad2
+			body.squads["two"] = squad3
+
+		def teardown(dt, body):
+			mx, my = body.mapsize
+			
+			for squad in body.squads:
+				body.drones.update(body.squads[squad])
+
+			for drone in body.drones:
+				drone.target = (mx/2, my/2)
+				drone.fellows = body.drones
+				drone.speed = 1
+
+			body.squads = {}
+
+		tricycle(0, self)
+		clock.schedule_once(tricycle, 2, self)
+		clock.schedule_once(tricycle, 4, self)
+		clock.schedule_once(teardown, 6, self)
+
+
+
+	def tornado(self, dt, *args):
+		mod = choice([-1,1])
+
+		for drone in self.drones:
+			drone.rotatePercent = 0.5 * mod
+			drone.speed = 2
+
+
+		def teardown(dt, body):
+			for drone in body.drones:
+				drone.rotatePercent = 0
+				drone.speed = 1
+
+
+		clock.schedule_once(teardown, 6, self)
+
+
+	def Explode(self, dt, *args):
+
+		for drone in self.drones:
+			drone.personal_space += 1500
+			drone.repulsion = 0.3
+			drone.speed = 2
+
+		def teardown(dt, body):
+			for drone in self.drones:
+				drone.personal_space -= 1500
+				drone.repulsion = 0.05
+				drone.speed = 1
+				drone.StartStun()
+
+		clock.schedule_once(teardown, 0.5, self)
+
+
+
+
+
+
+
+	def update(self, dt):
+		for drone in [drone for drone in self.drones if not drone.alive]:
+			self.drones.remove(drone)
+
+
+		if self.drones == set():
+			self.delete()
+			self.alive = False
+
+
+	def delete(self):
+		for drone in self.drones:
+			drone.alive = False
+
+		self.camera.player = self.player
+		self.camera.targetZoom = 0.5
+
+
+
+
+
+
+
+
+
 
 class BigWheel(Enemy):
 	pass

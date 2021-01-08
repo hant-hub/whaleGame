@@ -68,18 +68,21 @@ class Handler:
 			elif (symbol == window.key._3) and self.player.abilityThreeCool:
 				self.player.AbilityThree(self.player, "three")
 
-			elif (symbol == window.key.TAB):
+			else:
+				pass
+
+
+		def menuStuff(symbol, modifiers):
+			if (symbol == window.key.TAB):
 				self.pauseMenu = True
 
 			elif (symbol == window.key.L):
 				self.camera.locked = not self.camera.locked
 
-			else:
-				pass
 
 
-
-		self.window.push_handlers(on_mouse_drag = on_mouse_motion, on_mouse_motion = on_mouse_motion, on_mouse_press=on_mouse_press, on_mouse_release = on_mouse_release, on_key_press = on_key_press)
+		self.window.push_handlers(on_key_press = menuStuff)
+		self.window.push_handlers(on_mouse_drag = on_mouse_motion, on_mouse_motion = on_mouse_motion, on_mouse_press=on_mouse_press, on_mouse_release = on_mouse_release, on_key_press = on_key_press, on_mouse_scroll=on_mouse_scroll)
 
 
 

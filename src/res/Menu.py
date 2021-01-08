@@ -4,27 +4,39 @@ from pyglet import *
 
 class MenuButton:
 
-	def __init__(self, pos, size, sprite, func):
+	def __init__(self, pos, size, image, batch, group, func):
 
-		self.pos = pos
+		self.pos = (pos[0] - size[0]/2 ,pos[1] - size[1]/2)
 		self.size = size
-		self.sprite = sprite
+		self.anims = image
+		self.batch = batch
+		self.group = group
+
+		self.sprite = sprite.Sprite(image[0], batch = batch, group = group)
+		self.sprite.position = self.pos
 		self.activated = False
 		self.func = func
 
 
 
+	def call(self, dt):
+		self.activated = True
+
 	def clicked(self, point):
 		px, py = point
 		x, y = self.pos
 		width, height = self.size
+		
+
+
 
 
 		if (px > x) and (px < (x + width)):
 			if (py > y) and (py < (y + height)):
-
-				self.activated = True
-
+				self.sprite.delete()
+				self.sprite = sprite.Sprite(self.anims[1], batch = self.batch, group = self.group)
+				self.sprite.position =self.pos
+				clock.schedule_once(self.call, self.anims[1].get_duration())
 
 		
 
@@ -49,6 +61,8 @@ def quitTitle(screen, **kwargs):
 	clock.unschedule(kwargs['TitleUpdate'])
 	screen.pop_handlers()
 
+
+
 	kwargs['handler'].gamePlayHandler(kwargs['handler'].player, kwargs['handler'].camera)
 	clock.schedule_interval(kwargs['GameUpdate'], 1/240)
 	kwargs['handler'].titleMenu = True
@@ -56,15 +70,27 @@ def quitTitle(screen, **kwargs):
 
 
 
-def createTitleMenu(screen, objectlist, batch, **kwargs):
-	objectlist.add(MenuButton(pos = (screen.width/2 - 100, screen.height/2 + 50), size = (200,100), sprite = (shapes.Rectangle(*(screen.width/2- 100, screen.height/2 + 50), *(200,100), color = (255,255,255), batch = batch)), func = StartGame))
-	objectlist.add(MenuButton(pos = (screen.width/2 - 100, screen.height/2 - 150), size = (200,100), sprite = (shapes.Rectangle(*(screen.width/2 - 100, screen.height/2 - 150), *(200,100), color = (255,255,255), batch = batch)), func = quitGame))
 
 
-def createPauseMenu(screen, objectlist, batch, **kwargs):
-	objectlist.add(MenuButton(pos = (screen.width/2 - 100, screen.height/2 + 150), size = (200,100), sprite = (shapes.Rectangle(*(screen.width/2- 100, screen.height/2+150), *(200,100), color = (255,255,255), batch = batch)), func = StartGame))
-	objectlist.add(MenuButton(pos = (screen.width/2 - 100, screen.height/2-50), size = (200,100), sprite = (shapes.Rectangle(*(screen.width/2- 100, screen.height/2-50), *(200,100), color = (255,255,255), batch = batch)), func = quitTitle))
-	objectlist.add(MenuButton(pos = (screen.width/2 - 100, screen.height/2 - 250), size = (200,100), sprite = (shapes.Rectangle(*(screen.width/2 - 100, screen.height/2 - 250), *(200,100), color = (255,255,255), batch = batch)), func = quitGame))
+def createTitleMenu(screen, sprites, objectlist, batch, **kwargs):
+	screen.clear()
+	background = graphics.OrderedGroup(0)
+	foreground = graphics.OrderedGroup(1)
+	objectlist.add(MenuButton(pos = (screen.width/2, screen.height/2 +50), size = (sprites["start"][0].width,sprites["start"][0].height), image = sprites["start"], batch = batch, group = foreground, func = StartGame))
+	objectlist.add(MenuButton(pos = (screen.width/2, screen.height/2 - 100), size = (sprites["exit"][0].width,sprites["exit"][0].height), image = sprites["exit"], batch = batch, group = foreground, func = quitGame))
+
+
+
+def createPauseMenu(screen, sprites, objectlist, batch, **kwargs):
+	background = graphics.OrderedGroup(0)
+	foreground = graphics.OrderedGroup(1)
+	panel = sprite.Sprite(sprites["pausepanel"], x= 477, y = -280, batch = batch, group = background)
+	panel.scale = 0.39
+
+	objectlist.add(panel)
+	objectlist.add(MenuButton(pos = (screen.width/2, screen.height/2 + 150), size = ( sprites["resume"][0].width, sprites["resume"][0].height), image = sprites["resume"], batch = batch, group = foreground, func = StartGame))
+	objectlist.add(MenuButton(pos = (screen.width/2, screen.height/2), size =( sprites["menu"][0].width, sprites["menu"][0].height), image = sprites["menu"], batch = batch, group = foreground, func = quitTitle))
+	objectlist.add(MenuButton(pos = (screen.width/2, screen.height/2 - 150), size = ( sprites["quit"][0].width, sprites["quit"][0].height), image = sprites["quit"], batch = batch, group = foreground, func = quitGame))
 
 
 
@@ -72,11 +98,15 @@ def TitleMenu(screen, **kwargs):
 	clock.unschedule(kwargs['GameUpdate'])
 
 	for button in kwargs["objectlist"]:
-		button.sprite.delete()
-		del button.sprite
+		if isinstance(button, sprite.Sprite):
+			button.delete()
+		else:
+			button.sprite.delete()
+			del button.sprite
+		del button
 
 	kwargs["objectlist"].clear()
-	createTitleMenu(screen = screen, objectlist = kwargs["objectlist"], batch = kwargs['batch'])
+	createTitleMenu(screen = screen, sprites = kwargs["sprites"], objectlist = kwargs["objectlist"], batch = kwargs['batch'])
 
 
 	kwargs['handler'].EndHandling()
@@ -92,10 +122,11 @@ def PauseMenu(screen, **kwargs):
 	for button in kwargs["objectlist"]:
 		button.sprite.delete()
 		del button.sprite
+		del button
 
 	kwargs["objectlist"].clear()
 
-	createPauseMenu(screen = screen, objectlist = kwargs["objectlist"], batch = kwargs['batch'])
+	createPauseMenu(screen = screen, sprites = kwargs["sprites"], objectlist = kwargs["objectlist"], batch = kwargs['batch'])
 
 	kwargs['handler'].EndHandling()
 	kwargs['handler'].MenuHandler()

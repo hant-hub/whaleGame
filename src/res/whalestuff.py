@@ -20,19 +20,28 @@ class Player(visibleEntity):
 	it makes packaging of all the methods and data for the player far more convinient to set up.
 	And should multiplayer ever become feature we have the option of instantiating more instances of player
 	"""
-	def __init__(self, pos, size, speed, handler, objects, batch, group):
-		super().__init__(pos,size, shapes.Rectangle(*pos, *size, color=(255, 255, 0), batch=batch, group = group))
+	def __init__(self, pos, size, speed, handler, objects, images, batch, group):
+		super().__init__(pos,size, shapes.Rectangle(*pos, *(images["swim"][0].width-10,images["swim"][0].height-10), color=(255, 255, 0), batch=batch, group = group))
 
 
 
 		#setup sprite
 
+		self.sprite.anchor_x = 0
+		self.sprite.anchor_y = self.sprite.height * 3/4
 
-		self.sprite.anchor_x = (self.sprite.width/3) * 2
-		self.sprite.anchor_y = (self.sprite.height/2)
+		self.size = (images["swim"][0].width -10,images["swim"][0].height -10)
+		
+		
 
 		self.batch = batch
 		self.group = group
+		self.sprite.visible = False
+		self.swim_anims = images["swim"]
+		self.visual = sprite.Sprite(self.swim_anims[0], batch = batch, group = self.group)
+		self.moving = False
+
+
 
 
 		#setup movment
@@ -68,7 +77,11 @@ class Player(visibleEntity):
 		#abilities
 		self.AbilityOne = TailStrike.TailSlap
 		self.AbilityTwo = LaserStrike.startLaser
-		self.AbilityThree = WhaleSong.Sing
+		self.AbilityThree = HomingWeak.Fire
+
+		self.abilityIndicatorOne = TailStrike.sprite
+		self.abilityIndicatorTwo = LaserStrike.sprite
+		self.abilityIndicatorThree = HomingWeak.sprite
 
 		self.abilityOneCool = True
 		self.abilityTwoCool = True
@@ -80,6 +93,19 @@ class Player(visibleEntity):
 
 		if self.health <= 0:
 			self.OhFuckOhShitImGonnaDieIWasSoYoungAHHHHHHHHHHH()
+
+		if (math.hypot(*self.vel) > 30) and not self.moving:
+			self.visual.delete()
+			self.visual = sprite.Sprite(self.swim_anims[1], batch = self.batch, group = self.group)
+			self.moving = True
+
+		if (math.hypot(*self.vel) <= 30) and self.moving:
+			self.visual.delete()
+			self.visual = sprite.Sprite(self.swim_anims[0], batch = self.batch, group = self.group)
+			self.moving = False
+
+
+
 
 
 		#dive logic
@@ -100,14 +126,14 @@ class Player(visibleEntity):
 		ty = ((ty - (cy + zy))/self.camera.zoom) + zy
 
 
-
-		if self.ram == True:
-			x, y, dx, dy = self.Ram.ram(pos = (x, y), vel = (dx, dy), speed = self.speed, dt = dt)
-		elif self.moveLock == True:
+		if self.moveLock == True:
 			dx += ((tx - x) - dx) * self.turnspeed * self.speed
 			dy += ((ty - y) - dy) * self.turnspeed * self.speed
 
 			self.projectile.sprite.rotation = math.degrees(-math.atan2(dy, dx))
+
+		elif self.ram == True:
+			x, y, dx, dy = self.Ram.ram(pos = (x, y), vel = (dx, dy), speed = self.speed, dt = dt)
 
 		else:
 			x, y, dx, dy = self.basicmovement(pos = self.pos, vel = self.vel, target = (tx,ty), dt = dt)
@@ -117,11 +143,49 @@ class Player(visibleEntity):
 
 		#apply rotation
 
-		rotation = -math.degrees(math.atan2(dy, dx))
+		rotation = (math.degrees(math.atan2(dx, dy)) + 90)
 
-		self.updatevisual(sprite = self.sprite, rotation = rotation)
-		self.sprite.anchor_x = (self.sprite.width/3) * 2
-		self.sprite.anchor_y = (self.sprite.height/2)
+		
+
+		if rotation < 90:
+			self.visual.scale_y = 1
+			flipcorrect = 1
+
+		else:
+			self.visual.scale_y = -1
+			flipcorrect = -1
+
+
+
+
+		
+		self.updatevisual(image = self.sprite, rotation = rotation)
+		self.sprite.anchor_x = 0
+		self.sprite.anchor_y = self.sprite.height * 3/4
+
+
+		rotation = math.radians(rotation)
+
+		ax, ay = self.sprite.anchor_position
+
+
+		if flipcorrect == 1:
+			pass
+		else:
+			ay *= -0.5
+
+
+		
+
+		ax, ay = ((math.cos(-rotation) * ax) - (ay * math.sin(-rotation))),( (ay * math.cos(-rotation)) + (ax * math.sin(-rotation)))
+
+
+		self.visual.position = (self.sprite.x - ax, self.sprite.y - ay)
+		
+		self.visual.rotation = self.sprite.rotation
+		self.visual.scale = self.camera.zoom
+		
+
 
 		self.pos = (x,y)
 		self.vel = (dx,dy)
@@ -194,7 +258,7 @@ class Player(visibleEntity):
 						self.armour = 0
 
 					self.damage = False
-					clock.schedule_once(self.FlipBool, 0.1, "self.damage")
+					clock.schedule_once(self.FlipBool, 0.1, "self.damage", True)
 
 			pass
 
@@ -252,33 +316,33 @@ class Player(visibleEntity):
 				self.armour = 0
 
 			self.damage = False
-			clock.schedule_once(self.FlipBool, 2, "self.damage")
+			clock.schedule_once(self.FlipBool, 2, "self.damage", True)
 
 			print(self.armour, self.health)
 
 		elif (isinstance(obj, Hitbox) and self.damage):
 			obj.playerEffect(self)
 			self.damage = False
-			clock.schedule_once(self.FlipBool, 0.5, "self.damage")
+			clock.schedule_once(self.FlipBool, 0.5, "self.damage", True)
 
 
-	def FlipBool(self, dt, value):
+	def FlipBool(self, dt, value, output):
 		"""supposed to be general purpose boolean toggle function. Might remove in future"""
 
 		if value == "self.ram":
-			self.ram = not self.ram
+			self.ram = output
 
 		elif value == "self.damage":
-			self.damage = not self.damage
+			self.damage = output
 
 		elif value == "one":
-			self.abilityOneCool = not self.abilityOneCool
+			self.abilityOneCool = output
 
 		elif value == "two":
-			self.abilityTwoCool = not self.abilityTwoCool
+			self.abilityTwoCool = output
 
 		elif value == "three":
-			self.abilityThreeCool = not self.abilityThreeCool
+			self.abilityThreeCool = output
 
 
 

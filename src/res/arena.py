@@ -1,6 +1,7 @@
 import numpy as np
 from pyglet import *
 import math
+from random import choice, random
 
 
 
@@ -8,11 +9,16 @@ import math
 
 class Planet:
 
-	def __init__(self, pos, radius, camera, batch, group):
+	def __init__(self, pos, radius, camera, image, batch, group):
 		self.pos = pos
 		self.radius = radius
 		self.camera = camera
-		self.sprite = shapes.Circle(*pos, radius = radius, color=(int(np.random.uniform(0, 255)), int(np.random.uniform(0, 255)), int(np.random.uniform(0, 255))), batch = batch, group=group)
+		
+		self.sprite = sprite.Sprite(image, *pos, batch = batch, group = group)
+
+		self.sprite.scale = radius
+		self.dist = 1
+
 
 
 	def update(self, dt):
@@ -23,15 +29,18 @@ class Planet:
 		cx, cy = self.camera.pos
 		tx, ty = self.camera.target
 
-		self.sprite.x = ((x-tx) * self.camera.zoom) + cx + (tx)
-		self.sprite.y = ((y-ty) * self.camera.zoom) + cy + (ty)
+		self.sprite.x = ((x-tx) * self.camera.zoom) + (cx * self.dist)+ (tx)
+		self.sprite.y = ((y-ty) * self.camera.zoom) + (cy * self.dist)+ (ty)
 
 
-		self.sprite.radius = (self.radius) * self.camera.zoom
+		self.sprite.scale = self.camera.zoom * self.radius
 
 
 	def hit(self, obj, dt):
 		pass
+
+	def delete(self):
+		self.sprite.delete()
 
 
 	def direction(self,obj):
@@ -85,12 +94,13 @@ class Planet:
 class Map:
 
 
-	def __init__(self,k,r, size, bounds, camera, batch, group):
+	def __init__(self,k,r, size, bounds, camera, images, batch, group):
 		self.k = k
 		self.r=r
 		self.width, self.height = bounds
 		self.batch = batch
 		self.group = group
+		self.images = images
 
 		self.centers = self.Poission(k,r)
 		self.circles = set()
@@ -104,13 +114,7 @@ class Map:
 	def make_circles(self):
 		for point in self.centers:
 			radius = np.random.uniform(self.size/10, self.size-500)
-			self.circles.add(Planet(pos = point, radius = radius, camera = self.camera, batch = self.batch, group = self.group))
-
-
-
-
-
-
+			self.circles.add(Planet(pos = point, radius = radius/256, camera = self.camera, image = choice(self.images), batch = self.batch, group = self.group))
 
 
 

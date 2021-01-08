@@ -119,7 +119,7 @@ class visibleEntity:
 
 
 
-	def updatevisual(self,sprite, rotation = None):
+	def updatevisual(self,image, rotation = None):
 		"""updates the sprite to match the camera position"""
 
 		x, y = self.pos
@@ -127,19 +127,22 @@ class visibleEntity:
 		tx, ty = self.camera.target
 		width, height = self.size
 
-		sprite.x = ((x-tx) * self.camera.zoom) + (cx) + (tx)
-		sprite.y = ((y-ty) * self.camera.zoom) + (cy) + (ty)
+		image.x = ((x-tx) * self.camera.zoom) + (cx) + (tx)
+		image.y = ((y-ty) * self.camera.zoom) + (cy) + (ty)
 
+		if isinstance(image, shapes.Rectangle):
+			image.width = width * self.camera.zoom
+			image.height = height * self.camera.zoom			
+		else:
 
-		sprite.width = width * self.camera.zoom
-		sprite.height = height * self.camera.zoom
+			image.scale = self.camera.zoom
 
 		# sprite.anchor_x = sprite.anchor_x*self.camera.zoom
 		# sprite.anchor_y = sprite.anchor_y* self.camera.zoom
 
 
 		if rotation != None:
-			sprite.rotation = rotation
+			image.rotation = rotation
 
 	def delete(self):
 		"""deconstructor for the sprite to make sure it is no longer rendered after the death of its parent"""
@@ -167,7 +170,7 @@ class Hitbox(visibleEntity):
 		clock.schedule_once(self.kill, duration)
 
 	def update(self, dt):
-		self.updatevisual(sprite=self.sprite, rotation = self.rotation)
+		self.updatevisual(image=self.sprite, rotation = self.rotation)
 		self.sprite.anchor_x = 0
 		self.sprite.anchor_y = self.sprite.height/2
 
@@ -185,7 +188,7 @@ class collision:
 
 
 
-	def calculateVerticies(sprite):
+	def calculateVerticies(image):
 		"""converts sprite/rec object into world space vertecies
 
 
@@ -198,10 +201,13 @@ class collision:
 
 
 		#grab relavent data
-		rotation = math.radians(-sprite.rotation)
-		x, y = sprite.position
-		anchorx, anchory = (sprite.anchor_x, sprite.anchor_y)
-		width, height = (sprite.width, sprite.height)
+		rotation = math.radians(-image.rotation)
+		x, y = image.position
+
+		anchorx, anchory = (image.anchor_x, image.anchor_y)
+
+
+		width, height = (image.width, image.height)
 
 
 		#get vertex coordinates in terms of the anchorpoint

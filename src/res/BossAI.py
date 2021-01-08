@@ -64,45 +64,6 @@ class AiBrain:
 
 
 
-if __name__ == "__main__":
-	test = AiBrain(None)
-
-
-	def idle(dt, body):
-		sleep(1)
-
-	def attack(dt, body):
-		sleep(1)
-
-	def defend(dt, body):
-		sleep(1)
-
-	def decision(body, history):
-		if history[-1] != "idle":
-			return "idle"
-
-		elif history[-2] == "attack":
-			return "defend"
-
-		else:
-			return "attack"
-
-	test.decision = decision
-	test.addState(idle, "idle")
-	test.addState(attack, "attack")
-	test.addState(defend, "defend")
-
-	test.state = "idle"
-	test.switch()
-	print('hello')
-	test.states[test.history[-1]](None)
-	sleep(2.5)
-	test.switch()
-	test.states[test.history[-1]](None)
-
-
-
-
 
 
 
