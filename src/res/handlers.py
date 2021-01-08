@@ -2,6 +2,7 @@
 
 
 from pyglet import *
+from res import Menu
 import math
 
 
@@ -15,6 +16,11 @@ class Handler:
 		#init rotation for gameplay
 		self.target = (0,0)	
 		self.player = None
+
+		#buttonstuff
+		self.menu = None
+		self.titleMenu = True
+		self.pauseMenu = False
 
 
 	def gamePlayHandler(self, player, camera):
@@ -41,13 +47,6 @@ class Handler:
 				self.target = (x,y)
 				self.player.Ram.ramStart(parent = player)
 
-			if button == window.mouse.RIGHT:
-				self.player.damage = False
-				self.player.dive = True
-				self.player.sprite.opacity = 128
-
-				clock.unschedule(player.FlipBool)
-
 
 
 		def on_mouse_release(x,y, button, modifiers):
@@ -58,7 +57,46 @@ class Handler:
 				self.player.sprite.opacity = 255
 
 
-		self.window.push_handlers(on_mouse_drag = on_mouse_motion, on_mouse_motion = on_mouse_motion, on_mouse_press=on_mouse_press, on_mouse_release = on_mouse_release, on_mouse_scroll = on_mouse_scroll)
+		def on_key_press(symbol, modifiers):
+
+			if (symbol == window.key._1) and self.player.abilityOneCool:
+				self.player.AbilityOne(self.player, "one")
+
+			elif (symbol == window.key._2) and self.player.abilityTwoCool:
+				self.player.AbilityTwo(self.player, "two")
+
+			elif (symbol == window.key._3) and self.player.abilityThreeCool:
+				self.player.AbilityThree(self.player, "three")
+
+			else:
+				pass
+
+
+		def menuStuff(symbol, modifiers):
+			if (symbol == window.key.TAB):
+				self.pauseMenu = True
+
+			elif (symbol == window.key.L):
+				self.camera.locked = not self.camera.locked
+
+
+
+		self.window.push_handlers(on_key_press = menuStuff)
+		self.window.push_handlers(on_mouse_drag = on_mouse_motion, on_mouse_motion = on_mouse_motion, on_mouse_press=on_mouse_press, on_mouse_release = on_mouse_release, on_key_press = on_key_press, on_mouse_scroll=on_mouse_scroll)
+
+
+
+	def MenuHandler(self):
+
+		def on_mouse_press(x,y, button, modifiers):
+			if button == window.mouse.LEFT:
+
+				for obj in [obj for obj in self.menu if isinstance(obj, (Menu.MenuButton))]:
+					obj.clicked((x,y))
+
+
+
+		self.window.push_handlers(on_mouse_press = on_mouse_press)
 
 
 

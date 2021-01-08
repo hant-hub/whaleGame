@@ -3,6 +3,7 @@
 
 from pyglet import *
 import math, time
+from res import whalestuff
 
 
 
@@ -50,33 +51,55 @@ class Camera:
 	def __init__(self, pos, zoom, player, handler, window):
 		self.pos = pos
 		self.zoom = zoom
+		self.targetZoom = 0.5
 		self.player = player
 		self.target = (0,0)
 		self.handler = handler
 		self.window = window
+		self.locked = False
+
 
 	def update(self, dt):
 		px, py = self.player.pos
-		cx, cy = self.handler.target
+
+		dzoom = self.targetZoom - self.zoom
+		self.zoom += dzoom * dt
+
+		if not self.locked:
+			self.target = (px, py)
+
+			tx, ty = -(px - self.window.width/2), -(py - self.window.height/2)
+
+			dist = math.dist(self.pos, (tx,ty))
+
+			x, y = self.pos
+
+			tx -= x
+			ty -= y
+
+			if abs(tx) < (10 * dt * 1.25/self.zoom):
+				tx = 0
+
+			if abs(ty) < (10 * dt * 1.25/self.zoom):
+				ty = 0
 
 
-		self.target = (px, py)
+		
+			x += tx * dt * (1.25/self.zoom)
+			y += ty * dt * (1.25/self.zoom)
 
-		tx, ty = -(px - self.window.width/2),-(py - self.window.height/2)
+			self.pos = (x,y)
 
-		dist = math.dist(self.pos, (tx,ty))
 
-	
 
-		x, y = self.pos
 
-		tx -= x
-		ty -= y
 
-		x += tx * dt * (2/self.zoom)
-		y += ty * dt * (2/self.zoom)
 
-		self.pos = (x,y)
+
+
+
+
+
 
 
 
@@ -96,7 +119,7 @@ class visibleEntity:
 
 
 
-	def updatevisual(self,sprite, rotation = None):
+	def updatevisual(self,image, rotation = None):
 		"""updates the sprite to match the camera position"""
 
 		x, y = self.pos
@@ -104,19 +127,22 @@ class visibleEntity:
 		tx, ty = self.camera.target
 		width, height = self.size
 
-		sprite.x = ((x-tx) * self.camera.zoom) + cx + (tx)
-		sprite.y = ((y-ty) * self.camera.zoom) + cy + (ty)
+		image.x = ((x-tx) * self.camera.zoom) + (cx) + (tx)
+		image.y = ((y-ty) * self.camera.zoom) + (cy) + (ty)
 
+		if isinstance(image, shapes.Rectangle):
+			image.width = width * self.camera.zoom
+			image.height = height * self.camera.zoom			
+		else:
 
-		sprite.width = width * self.camera.zoom
-		sprite.height = height * self.camera.zoom
+			image.scale = self.camera.zoom
 
 		# sprite.anchor_x = sprite.anchor_x*self.camera.zoom
 		# sprite.anchor_y = sprite.anchor_y* self.camera.zoom
 
 
 		if rotation != None:
-			sprite.rotation = rotation
+			image.rotation = rotation
 
 	def delete(self):
 		"""deconstructor for the sprite to make sure it is no longer rendered after the death of its parent"""
@@ -127,6 +153,34 @@ class visibleEntity:
 
 
 
+class Hitbox(visibleEntity):
+
+	def __init__(self, pos, size, rotation, sprite, camera, duration, enemyEffect, playerEffect, projectileEffect = None):
+		super().__init__(pos = pos,size = size, sprite = sprite)
+		self.camera = camera
+		self.sprite.anchor_y = self.sprite.height/2
+		self.rotation = rotation
+		self.enemyEffect = enemyEffect
+		self.playerEffect = playerEffect
+		self.projectileEffect = projectileEffect
+		self.alive = True
+
+		self.sprite.rotation = rotation
+
+		clock.schedule_once(self.kill, duration)
+
+	def update(self, dt):
+		self.updatevisual(image=self.sprite, rotation = self.rotation)
+		self.sprite.anchor_x = 0
+		self.sprite.anchor_y = self.sprite.height/2
+
+	def kill(self, dt):
+		self.alive = False
+
+
+	def hit(self, *args):
+		pass
+
 
 class collision:
 	"""static class for collision functions"""
@@ -134,7 +188,7 @@ class collision:
 
 
 
-	def calculateVerticies(sprite):
+	def calculateVerticies(image):
 		"""converts sprite/rec object into world space vertecies
 
 
@@ -147,10 +201,13 @@ class collision:
 
 
 		#grab relavent data
-		rotation = math.radians(-sprite.rotation)
-		x, y = sprite.position
-		anchorx, anchory = (sprite.anchor_x, sprite.anchor_y)
-		width, height = (sprite.width, sprite.height)
+		rotation = math.radians(-image.rotation)
+		x, y = image.position
+
+		anchorx, anchory = (image.anchor_x, image.anchor_y)
+
+
+		width, height = (image.width, image.height)
 
 
 		#get vertex coordinates in terms of the anchorpoint
@@ -344,8 +401,6 @@ class collision:
 		
 		else:
 			return False
-
-
 
 
 
